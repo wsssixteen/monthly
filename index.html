@@ -514,33 +514,7 @@
           </div>
         </div>
 
-        <div id="categories">
-          <!-- Add an initial default category -->
-          <div class="category" draggable="true">
-              <div class="category-header">
-                  <div class="header-left" onclick="toggleCategory(this)">
-                      <span class="arrow">▼</span>
-                      <span class="title">Long Term</span>
-                  </div>
-                  <span class="cat-subtotal" style="font-size:11px;color:#aaa;">RM 300.00</span>
-                  <button class="danger" onclick="deleteCategory(this)">X</button>
-              </div>
-              <div class="category-body">
-                  <table>
-                      <tbody>
-                        <tr>
-                          <th>Item</th>
-                          <th>Amount</th>
-                          <th>Sub-Total</th>
-                          <th>Notes</th>
-                          <th></th>
-                        </tr>
-                      </tbody>
-                  </table>
-                  <button onclick="addRow(this)" style="margin-top:6px;">Add Row</button>
-              </div>
-          </div>
-        </div>
+        <div id="categories"></div>
 
         <div style="margin-top: 6px; text-align: right">
           <span
@@ -1067,6 +1041,13 @@
 
         // One clean pass after everything is in the DOM
         calculate();
+
+        // Check for categories if empty, to add a sample category
+        if (categoriesDiv && categoriesDiv.children.length === 0) {
+          createCategory("Long Term", [
+            { item: "Commitment", amount: 500 }
+          ]);
+        }
       }
 
       document.addEventListener("DOMContentLoaded", loadAuto);
@@ -1076,6 +1057,7 @@
         const isLight = body.classList.toggle('light');
         localStorage.setItem('monthlyTheme', isLight ? 'light' : 'dark');
       }
+
     </script>
   </body>
 </html>
