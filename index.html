@@ -33,13 +33,23 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: -8px;
+        margin-top: -12px;
       }
 
       .topbar-actions {
         display: flex;
         gap: 6px;
         align-items: center;
+        margin-top: -4px;
+      }
+
+      .tagline {
+        font-size: 11px;
+        font-weight: normal;
+        color: #555;
+        letter-spacing: 0.5px;
+        margin-top: -4px;
       }
 
       button {
@@ -102,6 +112,9 @@
         font-size: 11px;
         color: #aaa;
         margin-bottom: 4px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
       }
 
       .net-box .net-value {
@@ -174,6 +187,7 @@
         margin-right: 16px;
         font-size: 13px;
         font-weight: bold;
+        color: #ccc;
       }
 
       .surplus {
@@ -187,8 +201,9 @@
       }
 
       .planning {
+        background: #181818;
         margin-top: 8px;
-        border: 1px dashed #444;
+        border: 1px solid #444;
         padding: 8px;
         border-radius: 6px;
       }
@@ -203,8 +218,12 @@
       }
 
       .commitments-title {
-        font-size: 13px;
+        font-size: 11px;
+        color: #aaa;
+        margin-bottom: 3px;
         font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         white-space: nowrap;
       }
 
@@ -388,15 +407,7 @@
           alt="Monthly"
           style="height: 50px"
         />
-        <span
-          style="
-            font-size: 11px;
-            font-weight: normal;
-            color: #555;
-            letter-spacing: 0.5px;
-          "
-          >— Plan Your Month, Control Your Fate.</span
-        >
+        <span class="tagline">— Plan Your Month, Control Your Fate.</span>
       </div>
       <div class="topbar-actions">
         <button onclick="exportJSON()">Export</button>
@@ -419,24 +430,13 @@
       <div class="salary-grid">
         <!-- Col 1: Income -->
         <div class="breakdown-box">
-          <div
-            style="
-              font-size: 11px;
-              color: #aaa;
-              margin-bottom: 6px;
-              font-weight: bold;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            "
-          >
-            Income
-          </div>
+          <div class="commitments-title">Income</div>
           <label class="small">Gross Salary (RM)</label><br />
           <input
             type="number"
             id="gross"
             oninput="calculateSalary()"
-            style="width: 100%; margin-bottom: 6px"
+            style="width: 200px; margin-bottom: 6px"
           /><br />
           <label class="small"
             >Other Income (RM)
@@ -446,7 +446,7 @@
             type="number"
             id="other"
             oninput="calculateSalary()"
-            style="width: 100%"
+            style="width: 200px"
           />
           <div class="small" style="margin-top: 4px">
             Combined with Gross before deductions.
@@ -455,23 +455,12 @@
 
         <!-- Col 2: Salary Deductions -->
         <div class="breakdown-box">
-          <div
-            style="
-              font-size: 11px;
-              color: #aaa;
-              margin-bottom: 4px;
-              font-weight: bold;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            "
-          >
-            Salary Deductions
-          </div>
-          EPF (11%): RM <span id="epfVal">0</span><br />
-          SOCSO (~0.5%): RM <span id="socsoVal">0</span><br />
-          EIS (0.2%): RM <span id="eisVal">0</span><br />
+          <div class="commitments-title">Salary Deductions</div>
+          <span style="margin-right: 35px; color: #ccc;">EPF (11%):</span> RM <span id="epfVal">0</span><br />
+          <span style="margin-right: 5px; color: #ccc;">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span><br />
+          <span style="margin-right: 35px; color: #ccc;">EIS (0.2%):</span> RM <span id="eisVal">0</span><br />
           <div style="margin-top: 4px">
-            Income Tax: RM
+            <span style="margin-right: 28px; color: #ccc;">Income Tax:</span> RM
             <input
               type="number"
               id="tax"
@@ -491,8 +480,8 @@
 
         <!-- Col 3: Net Salary -->
         <div class="net-box">
-          <div class="net-label">NET SALARY (RM)</div>
-          <div class="net-value" id="netDisplay">—</div>
+          <div class="net-label">NET SALARY</div>
+          <div class="net-value" id="netDisplay">RM —</div>
           <div class="net-warning" id="taxWarning" style="display: none">
             ⚠ Tax not entered yet
           </div>
@@ -525,7 +514,33 @@
           </div>
         </div>
 
-        <div id="categories"></div>
+        <div id="categories">
+          <!-- Add an initial default category -->
+          <div class="category" draggable="true">
+              <div class="category-header">
+                  <div class="header-left" onclick="toggleCategory(this)">
+                      <span class="arrow">▼</span>
+                      <span class="title">Long Term</span>
+                  </div>
+                  <span class="cat-subtotal" style="font-size:11px;color:#aaa;">RM 300.00</span>
+                  <button class="danger" onclick="deleteCategory(this)">X</button>
+              </div>
+              <div class="category-body">
+                  <table>
+                      <tbody>
+                        <tr>
+                          <th>Item</th>
+                          <th>Amount</th>
+                          <th>Sub-Total</th>
+                          <th>Notes</th>
+                          <th></th>
+                        </tr>
+                      </tbody>
+                  </table>
+                  <button onclick="addRow(this)" style="margin-top:6px;">Add Row</button>
+              </div>
+          </div>
+        </div>
 
         <div style="margin-top: 6px; text-align: right">
           <span
@@ -543,13 +558,13 @@
 
       <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0">
         <div style="flex: 1; height: 1px; background: #333"></div>
-        <span style="font-size: 11px; color: #555">Other</span>
+        <span style="font-size: 11px; color: #555">Budgeting Workshop</span>
         <div style="flex: 1; height: 1px; background: #333"></div>
       </div>
 
       <div class="planning-row">
         <div class="planning">
-          <h3 style="margin: 0 0 6px 0; font-size: 13px">Uncommitted Yet</h3>
+          <div class="commitments-title">Commitment Considerations</div>
           <table id="planningTable">
             <tr>
               <th>Item</th>
@@ -559,13 +574,11 @@
               <th></th>
             </tr>
           </table>
-          <button onclick="addPlanningRow()">Add</button>
+          <button onclick="addPlanningRow()" style="margin-top:6px;">Add Row</button>
         </div>
 
         <div class="planning">
-          <h3 style="margin: 0 0 6px 0; font-size: 13px">
-            Spending Breakdown Tool
-          </h3>
+          <div class="commitments-title">Commitment Breakdown</div>
           <table id="breakdownTable">
             <tr>
               <th>Item</th>
@@ -575,7 +588,7 @@
               <th></th>
             </tr>
           </table>
-          <button onclick="addBreakdownRow()">Add</button>
+          <button onclick="addBreakdownRow()" style="margin-top:6px;">Add Row</button>
         </div>
       </div>
     </div>
@@ -667,7 +680,7 @@
                     <th></th>
                 </tr>
             </table>
-            <button onclick="addRow(this)">Add</button>
+            <button onclick="addRow(this)" style="margin-top:6px;">Add Row</button>
         </div>
     `;
 
