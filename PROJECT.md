@@ -76,16 +76,16 @@ Core function: `calculateSalary()` — reads gross + other, computes deductions,
 
 ## Quotes
 
-All quotes verified via web search unless marked otherwise. Style: `.quote-line` class — italic, `#555` (dark) / `#7a5c35` (light), `❝ ❞` ornament marks.
+All quotes verified via web search unless marked otherwise. Style: `.quote-line` class — italic, `#555` (dark) / `#7a5c35` (light), plain text only. Considerations and Breakdown sit inline beside the Add Row button.
 
 ### In Use
 
 | Location | Quote | Source |
 |---|---|---|
-| Income | ❝ Economy is the art of making the most of life. ❞ | George Bernard Shaw, *Man and Superman* — "Maxims for Revolutionists" (1903). Full: *"...The love of economy is the root of all virtue."* |
-| Commitments footer | ❝ Beware of little expenses; a small leak will sink a great ship. ❞ | Benjamin Franklin, *Poor Richard's Almanack* (1745, 1758) |
-| Commitment Considerations | ❝ Spend not where you may save; spare not where you must spend. ❞ | Anonymous folk proverb, collected in George Herbert's *Outlandish Proverbs* (1640) |
-| Commitment Breakdown | ❝ Sikit-sikit, lama-lama jadi bukit. ❞ | Malay peribahasa — "Little by little, over time, it becomes a hill." Indonesian variant: *Sedikit-sedikit, lama-lama menjadi bukit.* |
+| Income | Economy is the art of making the most of life. | George Bernard Shaw, *Man and Superman* — "Maxims for Revolutionists" (1903). Full: *"...The love of economy is the root of all virtue."* |
+| Commitments footer | Beware of little expenses; a small leak will sink a great ship. | Benjamin Franklin, *Poor Richard's Almanack* (1745, 1758) |
+| Commitment Considerations | Spend not where you may save; spare not where you must spend. | Anonymous folk proverb, collected in George Herbert's *Outlandish Proverbs* (1640) |
+| Commitment Breakdown | Sikit-sikit, lama-lama jadi bukit. | Malay peribahasa — "Little by little, over time, it becomes a hill." Indonesian variant: *Sedikit-sedikit, lama-lama menjadi bukit.* |
 
 ### Reserve / Considered
 
