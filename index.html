@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Monthly</title>
     <link
       rel="icon"
@@ -44,12 +45,50 @@
         margin-top: -4px;
       }
 
+      /* Hamburger — hidden on desktop */
+      .hamburger-btn {
+        display: none;
+        background: #2e7d32;
+        border: none;
+        color: white;
+        font-size: 18px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .hamburger-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #1e1e1e;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 6px;
+        z-index: 100;
+        min-width: 120px;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .hamburger-menu.open {
+        display: flex;
+      }
+      .hamburger-menu button {
+        width: 100%;
+        text-align: left;
+      }
+      .topbar-wrapper {
+        position: relative;
+        margin-bottom: 0.6em;
+      }
+
       .tagline {
         font-size: 11px;
         font-weight: normal;
         color: #555;
         letter-spacing: 0.5px;
-        margin-top: -4px;
+        margin-top: -9px;
       }
 
       button {
@@ -119,7 +158,6 @@
         margin-bottom: 4px;
         font-weight: bold;
         letter-spacing: 0.5px;
-        white-space: nowrap;
       }
 
       .net-box .net-value {
@@ -155,7 +193,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        cursor: grab;
+        cursor: pointer;
         font-size: 12px;
       }
 
@@ -171,6 +209,11 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 4px;
+      }
+
+      /* Sub-Total column: centred */
+      table td:nth-child(3) {
+        text-align: center;
       }
 
       th {
@@ -213,7 +256,7 @@
         border-radius: 6px;
       }
 
-      /* 3-col header for Monthly Commitments box */
+      /* 3-col header: Title | Totals | Add Category */
       .commitments-header {
         display: grid;
         grid-template-columns: auto 1fr auto;
@@ -257,10 +300,83 @@
         margin-top: 0;
       }
 
-      /* Stack on mobile */
+      /* Deductions grid — 2-col */
+      .deductions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 8px;
+        margin-top: 4px;
+      }
+      .deductions-col > div {
+        margin-bottom: 3px;
+      }
+
+      /* ===== MOBILE RESPONSIVE ===== */
       @media (max-width: 600px) {
+        body {
+          padding: 8px;
+        }
+
+        .tagline {
+          transform: translateX(-10px);
+        }
+
+        /* Topbar: hide action buttons, show hamburger instead */
+        .topbar-actions {
+          display: none;
+        }
+        .hamburger-btn {
+          display: block;
+        }
+
+        /* Income inputs: override fixed width on mobile */
+        .income-inputs input {
+          width: auto !important;
+        }
+
+        /* Salary grid: stack all 3 columns */
+        .salary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        /* Commitments header on mobile: Title | Add Category (row 1), Totals full-width (row 2) */
+        .commitments-header {
+          grid-template-columns: 1fr auto;
+          grid-template-rows: auto auto;
+        }
+        .commitments-header > .commitments-title {
+          grid-column: 1; grid-row: 1;
+        }
+        .commitments-header > .commitments-add {
+          grid-column: 2; grid-row: 1;
+        }
+        .commitments-header > .commitments-totals {
+          grid-column: 1 / -1; grid-row: 2;
+        }
+        /* Budgeting workshop side-by-side tables: stack */
         .planning-row {
           flex-direction: column;
+        }
+
+        /* Tables: horizontal scroll so columns don't crush */
+        .category-body,
+        .planning {
+          overflow-x: auto;
+        }
+        table {
+          min-width: 280px;
+        }
+
+        /* Amount column narrower */
+        table th:nth-child(2),
+        table td:nth-child(2) {
+          width: 60px;
+        }
+
+        /* Hide Sub-Total column on mobile */
+        table th:nth-child(3),
+        table td:nth-child(3) {
+          display: none;
         }
       }
 
@@ -268,6 +384,26 @@
         font-size: 11px;
         color: #aaa;
         margin-top: 2px;
+      }
+
+      /* Income inputs: 2-col grid */
+      .income-inputs {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 8px;
+        align-items: center;
+      }
+      .income-inputs label.small {
+        margin-top: 0;
+      }
+
+      /* NET SALARY inline subtitle */
+      .net-subtitle {
+        font-size: 9px;
+        color: #666;
+        font-weight: normal;
+        letter-spacing: normal;
+        text-transform: none;
       }
 
       .info-tip {
@@ -321,7 +457,7 @@
         color: #2d1f0e;
       }
       body.light .container {
-        background: #ede7d9;
+        background: #e2d9cd;
         box-shadow: 0 0 15px rgba(100, 60, 10, 0.15);
       }
       body.light .commitments-title {
@@ -329,6 +465,18 @@
       }
       body.light .deduction-label {
         color: #7a5c35;
+      }
+      body.light .breakdown-box .commitments-title label {
+        color: #7a5c35 !important;
+      }
+      body.light .section-label {
+        color: #7a5c35 !important;
+      }
+      body.light .tagline {
+        color: #7a5c35;
+      }
+      body.light #deductionsEnabled {
+        accent-color: #b8762a;
       }
       body.light .breakdown-box {
         background: #e6dfd0;
@@ -341,6 +489,9 @@
       body.light .net-box .net-label {
         color: #7a5c35;
       }
+      body.light .net-subtitle {
+        color: #a08060;
+      }
       body.light .net-box .net-value {
         color: #b8762a;
       }
@@ -349,6 +500,10 @@
       }
       body.light .planning{
         background: #e6dfd0;
+        border-color: #c9b99a;
+      }
+      body.light .hamburger-menu {
+        background: #ede7d9;
         border-color: #c9b99a;
       }
       body.light input {
@@ -434,7 +589,7 @@
         height: 50px;
       }
       body.light .logo {
-        filter: brightness(0.9) contrast(1.2);
+        filter: brightness(0.7) contrast(2);
       } 
     </style>
   </head>
@@ -447,21 +602,29 @@
           alt="Monthly"
           class="logo"
         />
-        <span class="tagline">— Plan Your Month, Control Your Fate.</span>
+        <span class="tagline">— Plan Your Month, Control Your Fate.</span></span>
       </div>
-      <div class="topbar-actions">
-        <button onclick="exportJSON()">Export</button>
-        <button onclick="document.getElementById('importFile').click()">
-          Import
-          <span class="info-tip"
-            >i
-            <span class="tip-text"
-              >You can also drag & drop the exported file on to the
-              page</span
-            >
-          </span>
-        </button>
-        <button onclick="resetAll()" style="background: #555">Reset</button>
+      <div class="topbar-wrapper">
+        <div class="topbar-actions">
+          <button onclick="exportJSON()">Export</button>
+          <button onclick="document.getElementById('importFile').click()">
+            Import
+            <span class="info-tip"
+              >i
+              <span class="tip-text"
+                >You can also drag & drop the exported file on to the
+                page</span
+              >
+            </span>
+          </button>
+          <button onclick="resetAll()" style="background: #555">Reset</button>
+        </div>
+        <button class="hamburger-btn" onclick="toggleHamburger()">&#9776;</button>
+        <div class="hamburger-menu" id="hamburgerMenu">
+          <button onclick="exportJSON(); closeHamburger()">Export</button>
+          <button onclick="document.getElementById('importFile').click(); closeHamburger()">Import</button>
+          <button onclick="resetAll(); closeHamburger()" style="background: #555">Reset</button>
+        </div>
         <input type="file" id="importFile" hidden />
       </div>
     </div>
@@ -471,62 +634,50 @@
         <!-- Col 1: Income -->
         <div class="breakdown-box">
           <div class="commitments-title">Income</div>
-          <label class="small">Gross Salary (RM)</label><br />
-          <input
-            type="number"
-            id="gross"
-            oninput="calculateSalary()"
-            style="width: 200px; margin-bottom: 6px"
-          /><br />
-          <label class="small"
-            >Other Income (RM)
-            <span style="color: #555">— optional</span></label
-          ><br />
-          <input
-            type="number"
-            id="other"
-            oninput="calculateSalary()"
-            style="width: 200px"
-          />
-          <div class="small" style="margin-top: 4px">
-            Combined with Gross before deductions.
+          <div class="income-inputs">
+            <label class="small">Gross Salary (RM)</label>
+            <input type="number" id="gross" oninput="calculateSalary()" style="width: 200px" />
+            <label class="small">Other Income (RM)</label>
+            <input type="number" id="other" oninput="calculateSalary()" style="width: 200px" />
           </div>
         </div>
 
         <!-- Col 2: Salary Deductions -->
         <div class="breakdown-box">
-          <div class="commitments-title">Salary Deductions</div>
-          <span class="deduction-label" style="margin-right: 35px;">EPF (11%):</span> RM <span id="epfVal">0</span><br />
-          <span class="deduction-label" style="margin-right: 5px;">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span><br />
-          <span class="deduction-label" style="margin-right: 35px;">EIS (0.2%):</span> RM <span id="eisVal">0</span><br />
-          <div style="margin-top: 4px">
-            <span class="deduction-label" style="margin-right: 28px;">Income Tax:</span> RM
-            <input
-              type="number"
-              id="tax"
-              value=""
-              placeholder="0"
-              oninput="calculateSalary()"
-              style="width: 80px"
-            />
+          <div class="commitments-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Salary Deductions</span>
+            <label style="font-size:11px;font-weight:normal;color:#aaa;cursor:pointer;letter-spacing:normal;text-transform:none;display:flex;align-items:center;gap:4px;">
+              <input type="checkbox" id="deductionsEnabled" checked onchange="calculateSalary()" style="width:auto;background:unset;border:unset;padding:0;" />
+              Include
+            </label>
+          </div>
+          <div class="deductions-grid">
+            <div class="deductions-col">
+              <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
+              <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
+            </div>
+            <div class="deductions-col">
+              <div><span class="deduction-label">EIS (0.2%):</span> RM <span id="eisVal">0</span></div>
+              <div>
+                <span class="deduction-label">Income Tax:</span> RM
+                <input type="number" id="tax" value="" placeholder="0" oninput="calculateSalary()" style="width: 60px" />
+              </div>
+            </div>
           </div>
           <div class="small" style="margin-top: 4px">
             Unsure of tax? Use the
-            <a href="https://payroll.my" target="_blank" style="color: #4caf50"
-              >PCB Calculator</a
-            >
+            <a href="https://payroll.my" target="_blank" style="color: #4caf50">PCB Calculator</a>
           </div>
         </div>
 
-        <!-- Col 3: Net Salary -->
+        <!-- Col 3: Salary -->
         <div class="net-box">
-          <div class="net-label">NET SALARY</div>
+          <div class="net-label">
+            <span id="salaryLabel">NET SALARY</span><span id="salarySubtitle" class="net-subtitle"> (Gross + Other − Deductions)</span>
+          </div>
           <div class="net-value" id="netDisplay">RM —</div>
           <div class="net-warning" id="taxWarning" style="display: none">
             ⚠ Tax not entered yet
-          </div>
-          <div class="small" style="margin-top: 6px">
-            Gross + Other − Deductions
           </div>
         </div>
       </div>
@@ -535,7 +686,7 @@
       <input type="number" id="net" style="display: none" readonly />
 
       <div class="planning">
-        <!-- 3-col header: Title | Totals | Add button -->
+        <!-- 3-col header: Title | Totals | Add Category -->
         <div class="commitments-header">
           <div class="commitments-title">Monthly Commitments</div>
           <div class="commitments-totals">
@@ -557,22 +708,17 @@
         <div id="categories"></div>
 
         <div style="margin-top: 6px; text-align: right">
-          <span
-            id="saveStatus"
-            style="font-size: 12px; color: #4caf50; margin-right: 6px"
-          ></span>
+          <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
           <button onclick="manualSave()">Save
-          <span class="info-tip"
-            >i
-            <span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span>
-          </span>
+            <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
           </button>
         </div>
+
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0">
         <div class="separator-line" style="flex: 1; height: 1px; background: #333"></div>
-        <span style="font-size: 11px; color: #555">Budgeting Workshop</span>
+        <span class="section-label" style="font-size: 11px; color: #555">Budgeting Workshop</span>
         <div class="separator-line" style="flex: 1; height: 1px; background: #333"></div>
       </div>
 
@@ -608,6 +754,17 @@
     </div>
 
     <script>
+      /* HAMBURGER MENU */
+      function toggleHamburger() {
+        document.getElementById("hamburgerMenu").classList.toggle("open");
+      }
+      function closeHamburger() {
+        document.getElementById("hamburgerMenu").classList.remove("open");
+      }
+      document.addEventListener("click", function(e) {
+        if (!e.target.closest(".topbar-wrapper")) closeHamburger();
+      });
+
       /* SAVE */
       function manualSave() {
         const data = collectData();
@@ -629,16 +786,21 @@
         let gross = parseFloat(document.getElementById("gross").value) || 0;
         let other = parseFloat(document.getElementById("other").value) || 0;
         let total = gross + other;
+        let deductionsEnabled = document.getElementById("deductionsEnabled").checked;
 
-        let epf = total * 0.11;
-        let socso = total * 0.005;
-        let eis = total * 0.002;
+        let epf = deductionsEnabled ? total * 0.11 : 0;
+        let socso = deductionsEnabled ? total * 0.005 : 0;
+        let eis = deductionsEnabled ? total * 0.002 : 0;
 
         let taxInput = document.getElementById("tax").value;
-        let tax = parseFloat(taxInput) || 0;
+        let tax = deductionsEnabled ? (parseFloat(taxInput) || 0) : 0;
         let taxEntered = taxInput.trim() !== "" && taxInput.trim() !== "0";
 
         let net = total - (epf + socso + eis + tax);
+
+        // Dim the deductions col when disabled
+        const deductionsBox = document.getElementById("deductionsEnabled").closest(".breakdown-box");
+        deductionsBox.style.opacity = deductionsEnabled ? "" : "0.35";
 
         document.getElementById("epfVal").innerText = epf.toFixed(2);
         document.getElementById("socsoVal").innerText = socso.toFixed(2);
@@ -646,12 +808,18 @@
         document.getElementById("netDisplay").innerText =
           gross === 0 ? "—" : "RM " + net.toFixed(2);
 
+        // Update label and subtitle
+        document.getElementById("salaryLabel").innerText =
+          deductionsEnabled ? "NET SALARY" : "SALARY";
+        document.getElementById("salarySubtitle").innerText =
+          deductionsEnabled ? " (Gross + Other − Deductions)" : " (Gross + Other)";
+
         // Keep hidden net input in sync so calculate() still reads it correctly
         document.getElementById("net").value = net.toFixed(2);
 
-        // Show warning if gross is filled but tax hasn't been entered
+        // Show warning if gross is filled but tax hasn't been entered (only when deductions on)
         const warning = document.getElementById("taxWarning");
-        warning.style.display = gross > 0 && !taxEntered ? "block" : "none";
+        warning.style.display = gross > 0 && deductionsEnabled && !taxEntered ? "block" : "none";
       }
 
       // Used on user input — updates display AND recalculates totals
@@ -676,13 +844,13 @@
         container.draggable = true;
 
         container.innerHTML = `
-        <div class="category-header">
-            <div class="header-left" onclick="toggleCategory(this)">
+        <div class="category-header" onclick="toggleCategory(this)">
+            <div class="header-left">
                 <span class="arrow">▼</span>
-                <span class="title"></span>
+                <span class="title" title="Double-click to rename" ondblclick="renameCategory(event, this)"></span>
             </div>
             <span class="cat-subtotal"></span>
-            <button class="danger" onclick="deleteCategory(this)">x</button>
+            <button class="danger" onclick="event.stopPropagation(); deleteCategory(this)">x</button>
         </div>
         <div class="category-body">
             <table>
@@ -727,6 +895,32 @@
           body.style.display = "none";
           arrow.innerText = "▶";
         }
+      }
+
+      function renameCategory(e, titleSpan) {
+        e.stopPropagation(); // don't trigger toggleCategory
+        let current = titleSpan.textContent;
+        let input = document.createElement("input");
+        input.value = current;
+        input.style.cssText = "width:120px;font-size:12px;padding:1px 4px;";
+        titleSpan.replaceWith(input);
+        input.focus();
+        input.select();
+
+        function commit() {
+          let newName = input.value.trim() || current;
+          let span = document.createElement("span");
+          span.className = "title";
+          span.textContent = newName;
+          span.ondblclick = (ev) => renameCategory(ev, span);
+          input.replaceWith(span);
+          save();
+        }
+        input.addEventListener("blur", commit);
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") input.blur();
+          if (ev.key === "Escape") { input.value = current; input.blur(); }
+        });
       }
 
       function deleteCategory(btn) {
@@ -890,6 +1084,7 @@
           gross: document.getElementById("gross").value,
           other: document.getElementById("other").value,
           tax: document.getElementById("tax").value,
+          deductionsEnabled: document.getElementById("deductionsEnabled").checked,
           categories: [],
           planning: [],
           breakdown: [],
@@ -934,10 +1129,12 @@
       }
 
       function exportJSON() {
-        let name = prompt("Save as:", "budget");
-        if (!name) return; // cancelled
-        name = name.trim() || "budget";
-        if (!name.endsWith(".json")) name += ".json";
+        const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, "0");
+        const mmm = months[now.getMonth()];
+        const yyyy = now.getFullYear();
+        const name = `MONTHLY_${dd}-${mmm}-${yyyy}.json`;
 
         let data = collectData();
         let blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -1042,6 +1239,11 @@
       }
 
       function loadAuto() {
+        // Restore theme before anything else (independent of budget data)
+        if (localStorage.getItem("monthlyTheme") === "light") {
+          document.body.classList.add("light");
+        }
+
         let raw = localStorage.getItem("budgetData");
         if (!raw) return;
 
@@ -1056,6 +1258,7 @@
         document.getElementById("gross").value = data.gross || 0;
         document.getElementById("other").value = data.other || "";
         document.getElementById("tax").value = data.tax || "";
+        document.getElementById("deductionsEnabled").checked = data.deductionsEnabled !== false;
 
         // calculateSalaryDisplay() only — does NOT call calculate().
         // Rows don't exist yet at this point, so calling calculate() would be wrong.
