@@ -89,6 +89,7 @@
         color: #555;
         letter-spacing: 0.5px;
         margin-top: -9px;
+        font-style: italic;
       }
 
       button {
@@ -320,6 +321,9 @@
         .tagline {
           transform: translateX(-10px);
         }
+        .quote-break {
+          display: block;
+        }
 
         /* Topbar: hide action buttons, show hamburger instead */
         .topbar-actions {
@@ -395,6 +399,15 @@
       }
       .income-inputs label.small {
         margin-top: 0;
+      }
+
+      /* Quote lines */
+      .quote-line {
+        font-size: 11px;
+        color: #555;
+        letter-spacing: 0.5px;
+        font-style: italic;
+        margin-top: 8px;
       }
 
       /* NET SALARY inline subtitle */
@@ -473,6 +486,9 @@
         color: #7a5c35 !important;
       }
       body.light .tagline {
+        color: #7a5c35;
+      }
+      body.light .quote-line {
         color: #7a5c35;
       }
       body.light #deductionsEnabled {
@@ -640,6 +656,7 @@
             <label class="small">Other Income (RM)</label>
             <input type="number" id="other" oninput="calculateSalary()" style="width: 200px" />
           </div>
+          <div class="quote-line">Economy is the art of making the most of life.</div>
         </div>
 
         <!-- Col 2: Salary Deductions -->
@@ -707,11 +724,14 @@
 
         <div id="categories"></div>
 
-        <div style="margin-top: 6px; text-align: right">
-          <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
-          <button onclick="manualSave()">Save
-            <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
-          </button>
+        <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <div class="quote-line" style="margin-top: 0;">Beware of little expenses;<span class="quote-break"> a small leak will sink a great ship.</span></div>
+          <div style="white-space: nowrap;">
+            <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
+            <button onclick="manualSave()">Save
+              <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -735,6 +755,7 @@
             </tr>
           </table>
           <button onclick="addPlanningRow()" style="margin-top:6px;">Add Row</button>
+          <div class="quote-line">Spend not where you may save;<span class="quote-break"> spare not where you must spend.</span></div>
         </div>
 
         <div class="planning">
@@ -749,6 +770,7 @@
             </tr>
           </table>
           <button onclick="addBreakdownRow()" style="margin-top:6px;">Add Row</button>
+          <div class="quote-line">Sikit-sikit, lama-lama jadi bukit.</div>
         </div>
       </div>
     </div>
