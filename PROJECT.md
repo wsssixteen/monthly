@@ -19,7 +19,7 @@ Plan spending by allocating money upfront each month, rather than tracking daily
 ## Architecture
 
 - **Single file:** `index.html` — HTML + CSS + JS, no external dependencies, no framework.
-- **Persistence:** Manual save via Save button → `localStorage`. Load on `DOMContentLoaded`.
+- **Persistence:** `localStorage`. **Auto-save** on any change once `appLoaded` is true (`autoSaveNow()` for clicks, `autoSaveDebounced()` ~600ms for typing) — status flashes **"⟳ Auto Saved"**. The manual **Save** button flashes **"✓ Saved"**. Load on `DOMContentLoaded`; `appLoaded` flips true at the end of `loadAuto()` so loading never triggers a save.
 - **Export/Import:** JSON file download/upload; drag-and-drop import supported. Export filename auto-generated as `MONTHLY_DD-MMM-YYYY.json`.
 - **Theme:** Dark mode default, light mode toggle (stored in `localStorage` as `monthlyTheme`).
 
@@ -28,12 +28,16 @@ Plan spending by allocating money upfront each month, rather than tracking daily
 ### Salary Calculator (`salary-grid`)
 Three-column layout:
 1. **Income** — Gross Salary + optional Other Income inputs.
-2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%) + manual Income Tax input.
+2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%), LINDUNG 24/SKBBK (0.75%, PERKESO scheme effective June 2026, employee-borne, Phase-1 rate), and **PCB** (auto-estimated income tax). SOCSO/EIS/LINDUNG apply the statutory RM6,000 wage ceiling; EPF has none.
+   - **PCB auto-estimate** (`computePCB()`): annualise income, subtract personal relief (RM9,000) + EPF relief (capped RM4,000), apply the resident progressive brackets, apply the RM400 rebate (chargeable ≤ RM35,000), divide by 12. A ballpark — the `#tax` field is an **override**: blank = use the estimate (shown as ghost placeholder), typed value = use that. Bracket table sourced from PwC/LHDN (verified 2026-07).
+   - **"Not Applicable"**: PCB/MTD is legally mandatory for employers (Income Tax (Deduction from Remuneration) Rules 1994, in force since 1995) — but only bites when the employee is taxable. Single earners below ~RM2,833/mo (after EPF) owe none, and PCB < RM10/mo isn't deducted. When the auto-estimate is 0 (and no manual override typed) the **whole row is swapped** from `PCB: RM [input]` to a `#pcbNA` line reading **"PCB Not Applicable"**; typing an override forces the input row back.
+   - The "Estimate — verify via PCB Calculator" hint (`#pcbHint`) sits in the right-column cell under the PCB input; hidden while N/A.
    - Toggled via an **"Include" checkbox** (top-right of the box). When unchecked, all deductions are zeroed and the box dims.
    - Checkbox state is saved and restored with the rest of the budget data.
-3. **Salary display** (`net-box`) — Shows computed take-home.
-   - Label reads **NET SALARY** when deductions are on, **SALARY** when off.
-   - Subtitle updates accordingly ("Gross + Other − Deductions" vs "Gross + Other").
+3. **Salary + Balance display** (`net-box`) — two `.net-half` halves split by a `.net-divider` line. Subtitles (`.net-subtitle`) render as their **own row** (`display:block`) under each label.
+   - Left half: computed take-home. Label reads **NET SALARY** when deductions are on, **SALARY** when off; subtitle updates accordingly.
+   - Right half: **BALANCE (Salary − Spent)** — salary minus paid rows (full) and ongoing rows (prorated).
+   - **Colour scheme is consistent across themes (do not swap):** SALARY = green (`#4caf50` dark / `#3a7a2a` light); BALANCE = amber (`#ffb300` dark / `#b8762a` light); BALANCE `.neg` = red (`#ff5252` dark / `#b02000` light). Shows `RM —` while gross is empty.
 
 Core function: `calculateSalary()` — reads gross + other, computes deductions, writes hidden `#net` input, triggers `calculate()`.
 
@@ -44,6 +48,25 @@ Core function: `calculateSalary()` — reads gross + other, computes deductions,
 - **Category rename:** double-click the title to edit inline; Enter/blur to confirm, Escape to cancel. Tooltip: "Double-click to rename".
 - Grand Total + Surplus/Deficit displayed in header.
 - Delete button uses `stopPropagation` so it doesn't trigger the toggle.
+
+### Amount Math
+Amount fields in all three tables accept `+ - * / ( )` expressions (e.g. `20*30`). `evalAmount()` whitelist-validates then evaluates; the expression stays visible in the field, totals use the result. Invalid/partial input counts as 0.
+
+### Row States (commitment rows) — TWO separate controls with separate jobs
+Actions cell is `[✓] [◐] [del]`; the Amount cell holds `[input] [cadence badge]`.
+- **`✓` (paid) — NO popup.** Grays the row (0.45 opacity), counts the **full amount** as spent; flips to `↺` to restore. `onPaidBtn()`.
+- **`◐` (actions) — CADENCE chooser** (`onOngoingBtn()` → `#cadencePopover`): `Daily` / `Weekly` / `[X] times [set]`. Sets `dataset.cadence` and marks the row ongoing (`popPickCadence()` / `popSetCadenceX()`). The current one is highlighted. **Clicking the already-active cadence again toggles the row back to a plain `active` row** (undo) — Balance immediately drops its amount×times and the Sub-Total reverts to the raw amount.
+- **Cadence badge (Amount cell) — TIMES chooser** (`onBadge()` → `#statePopover`): visible only when ongoing, shows the cadence. Opens a 2-row popover: `Current: <t> times | RM <amount×t> (spent)` + `Update: [input] set` (`popSetTimesPaid()` → `dataset.times`). "set" keeps the popover open, refreshes the Current line.
+- **Two numbers, `rowInstallments(row)` = N:**
+  - **N** (month total, from cadence): `daily` = days in month (28–31), `weekly` = `ceil(days ÷ 7)`, `X` = the custom count.
+  - **Sub-Total column + Grand Total** = `amount × N` (the full month plan). Changing times does NOT move them.
+  - **Balance** = `amount × timesPaid` (what's actually been spent so far). `timesPaid` is **capped at N** — the Update input's `max` = N, and `capTimesToInstallments()` clamps it when the cadence shrinks.
+
+**↺ Untick All** (left of Save) resets every paid/ongoing row to active — the new-month ritual.
+
+### Promote (Considerations → Commitments)
+Considerations rows have an `↑` promote button: one category = moves straight in; multiple = `#promotePopover` lists category targets. Breakdown rows stay del-only.
+After a promote, the `#undoToast` appears bottom-center for 5s — **Undo** moves the row back (live values if still present). Guards against accidental promote clicks. **Deleting a commitment row** (`del`) uses the same toast — Undo re-adds the row with its saved state/cadence/times (re-added at the end of its category, not its original slot).
 
 ### Uncommitted & Breakdown Tables
 - Show how remaining money is allocated after commitments.
@@ -105,9 +128,11 @@ All quotes verified via web search unless marked otherwise. Style: `.quote-line`
   "other": "",
   "tax": "100",
   "deductionsEnabled": true,
-  "categories": [{ "name": "Housing", "rows": [{ "item": "Rent", "amount": "1200", "notes": "" }] }],
+  "categories": [{ "name": "Housing", "rows": [{ "item": "Rent", "amount": "1200", "notes": "", "state": "active", "cadence": "", "since": "" }] }],
   "planning": [{ "item": "", "amount": "", "notes": "" }],
   "breakdown": [{ "item": "", "amount": "", "notes": "" }]
 }
 ```
+`state`/`cadence` are missing on pre-2026-07 saves — loaders default them to `"active"`/`""`, so old localStorage data and old exported JSON import cleanly.
+
 Theme is stored separately under key `monthlyTheme` as `"light"` or `"dark"`. Auto-saved on every toggle (no Save button needed). Restored at the top of `loadAuto()` before the budget data load, so it persists across refreshes independently.

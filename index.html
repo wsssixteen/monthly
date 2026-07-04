@@ -141,16 +141,37 @@
         color: #ccc;
       }
 
-      /* Col 3 — Net Salary display box */
+      /* Col 3 — Salary + Balance display box (two halves split by a divider) */
       .net-box {
         background: #181818;
         border: 1px solid #2e7d32;
         border-radius: 6px;
         padding: 8px 12px;
         display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .net-half {
+        flex: 1;
+        display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
+      }
+
+      .net-divider {
+        width: 1px;
+        background: #2e7d32;
+      }
+
+      /* .net-value.balance-value out-specifies .net-box .net-value's green */
+      .net-box .net-value.balance-value {
+        color: #ffb300;
+      }
+      .net-box .net-value.balance-value.neg {
+        color: #ff5252;
       }
 
       .net-box .net-label {
@@ -290,6 +311,130 @@
         color:#aaa;
       }
 
+      /* Row states: paid = dimmed row; ongoing = normal row, ◐ button carries the mark */
+      tr.row-paid {
+        opacity: 0.45;
+      }
+
+      .state-btn {
+        background: #3a3a3a;
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      .ongoing-btn {
+        background: #3a3a3a;
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      .ongoing-btn.ongoing-active {
+        background: #2e7d32;
+      }
+      .cadence-badge {
+        font-size: 10px;
+        color: #ffb300;
+        border: 1px solid #555;
+        border-radius: 3px;
+        padding: 1px 4px;
+        cursor: pointer;
+        white-space: nowrap;
+        line-height: 1.4;
+      }
+      body.light .cadence-badge {
+        color: #b8762a;
+        border-color: #c9b99a;
+      }
+
+      .promote-btn {
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+
+      /* Cadence badge — sits beside the Amount input on ongoing rows */
+      /* Floating popover — row-state chooser + promote-target chooser */
+      .state-popover {
+        position: absolute;
+        background: #1e1e1e;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 6px;
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 140px;
+      }
+      .state-popover button {
+        background: #2a2a2a;
+        text-align: left;
+      }
+      .state-popover button:hover {
+        background: #2e7d32;
+      }
+      .pop-custom {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        color: #ccc;
+        font-size: 11px;
+      }
+      .pop-custom input {
+        width: 44px;
+      }
+
+      /* Update row — user manually sets how many times they've actually paid */
+      .pop-update {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        color: #ccc;
+        font-size: 11px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #444;
+        margin-bottom: 3px;
+      }
+      .pop-update input {
+        width: 56px;
+      }
+
+      /* Popover header — reflects the row's current setting */
+      .pop-current {
+        font-size: 10px;
+        color: #ffb300;
+        padding: 1px 4px 5px;
+        border-bottom: 1px solid #444;
+        margin-bottom: 2px;
+      }
+      /* The currently-active option is highlighted when the popover opens */
+      .state-popover button.pop-sel {
+        background: #2e7d32;
+        outline: 1px solid #4caf50;
+      }
+      .pop-custom.pop-sel {
+        outline: 1px solid #4caf50;
+        border-radius: 4px;
+        padding: 2px;
+      }
+
+      /* Undo toast — appears after a promote, auto-dismisses */
+      .undo-toast {
+        position: fixed;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e1e1e;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 8px 12px;
+        z-index: 300;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        max-width: 90vw;
+      }
+
       .planning-row {
         display: flex;
         gap: 8px;
@@ -410,8 +555,9 @@
         margin-top: 8px;
       }
 
-      /* NET SALARY inline subtitle */
+      /* NET SALARY subtitle — own row by default for a cleaner label */
       .net-subtitle {
+        display: block;
         font-size: 9px;
         color: #666;
         font-weight: normal;
@@ -509,10 +655,53 @@
         color: #a08060;
       }
       body.light .net-box .net-value {
-        color: #b8762a;
+        color: #3a7a2a;
       }
       body.light .net-box .net-warning {
         color: #c85000;
+      }
+      body.light .net-box .net-value.balance-value {
+        color: #b8762a;
+      }
+      body.light .net-box .net-value.balance-value.neg {
+        color: #b02000;
+      }
+      body.light .net-divider {
+        background: #c8822a;
+      }
+      body.light .state-btn {
+        background: #a08a68;
+      }
+      body.light .ongoing-btn.ongoing-active {
+        background: #b8762a;
+      }
+      body.light .state-popover {
+        background: #ede7d9;
+        border-color: #c9b99a;
+      }
+      body.light .state-popover button {
+        background: #ddd5c0;
+        color: #2d1f0e;
+      }
+      body.light .state-popover button:hover {
+        background: #b8762a;
+        color: #fff;
+      }
+      body.light .pop-custom {
+        color: #7a5c35;
+      }
+      body.light .pop-current {
+        color: #b8762a;
+        border-color: #c9b99a;
+      }
+      body.light .pop-update {
+        color: #7a5c35;
+        border-color: #c9b99a;
+      }
+      body.light .undo-toast {
+        background: #ede7d9;
+        border-color: #c9b99a;
+        color: #2d1f0e;
       }
       body.light .planning{
         background: #e6dfd0;
@@ -652,9 +841,9 @@
           <div class="commitments-title">Income</div>
           <div class="income-inputs">
             <label class="small">Gross Salary (RM)</label>
-            <input type="number" id="gross" oninput="calculateSalary()" style="width: 200px" />
+            <input type="number" id="gross" oninput="calculateSalary(); autoSaveDebounced()" style="width: 200px" />
             <label class="small">Other Income (RM)</label>
-            <input type="number" id="other" oninput="calculateSalary()" style="width: 200px" />
+            <input type="number" id="other" oninput="calculateSalary(); autoSaveDebounced()" style="width: 200px" />
           </div>
           <div class="quote-line">Economy is the art of making the most of life.</div>
         </div>
@@ -664,7 +853,7 @@
           <div class="commitments-title" style="display:flex;justify-content:space-between;align-items:center;">
             <span>Salary Deductions</span>
             <label style="font-size:11px;font-weight:normal;color:#aaa;cursor:pointer;letter-spacing:normal;text-transform:none;display:flex;align-items:center;gap:4px;">
-              <input type="checkbox" id="deductionsEnabled" checked onchange="calculateSalary()" style="width:auto;background:unset;border:unset;padding:0;" />
+              <input type="checkbox" id="deductionsEnabled" checked onchange="calculateSalary(); autoSaveNow()" style="width:auto;background:unset;border:unset;padding:0;" />
               Include
             </label>
           </div>
@@ -672,29 +861,37 @@
             <div class="deductions-col">
               <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
               <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
+              <div><span class="deduction-label">LINDUNG 24 (0.75%):</span> RM <span id="lindungVal">0</span></div>
             </div>
             <div class="deductions-col">
               <div><span class="deduction-label">EIS (0.2%):</span> RM <span id="eisVal">0</span></div>
-              <div>
-                <span class="deduction-label">Income Tax:</span> RM
-                <input type="number" id="tax" value="" placeholder="0" oninput="calculateSalary()" style="width: 60px" />
+              <div id="pcbRow">
+                <span class="deduction-label">PCB:</span> RM
+                <input type="number" id="tax" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated from the tax brackets — type a value to override" />
+              </div>
+              <div id="pcbNA" style="display:none"><span class="deduction-label">PCB Not Applicable</span></div>
+              <div class="small" id="pcbHint" style="margin-top: 2px">
+                Estimate — verify via
+                <a href="https://payroll.my" target="_blank" style="color: #4caf50">PCB Calculator</a>
               </div>
             </div>
           </div>
-          <div class="small" style="margin-top: 4px">
-            Unsure of tax? Use the
-            <a href="https://payroll.my" target="_blank" style="color: #4caf50">PCB Calculator</a>
-          </div>
         </div>
 
-        <!-- Col 3: Salary -->
+        <!-- Col 3: Salary + Balance -->
         <div class="net-box">
-          <div class="net-label">
-            <span id="salaryLabel">NET SALARY</span><span id="salarySubtitle" class="net-subtitle"> (Gross + Other − Deductions)</span>
+          <div class="net-half">
+            <div class="net-label">
+              <span id="salaryLabel">NET SALARY</span><span id="salarySubtitle" class="net-subtitle"> (Gross + Other − Deductions)</span>
+            </div>
+            <div class="net-value" id="netDisplay">RM —</div>
           </div>
-          <div class="net-value" id="netDisplay">RM —</div>
-          <div class="net-warning" id="taxWarning" style="display: none">
-            ⚠ Tax not entered yet
+          <div class="net-divider"></div>
+          <div class="net-half">
+            <div class="net-label">
+              BALANCE<span class="net-subtitle"> (Salary − Spent)</span>
+            </div>
+            <div class="net-value balance-value" id="balanceDisplay">RM —</div>
           </div>
         </div>
       </div>
@@ -728,6 +925,7 @@
           <div class="quote-line" style="margin-top: 0;">Beware of little expenses;<span class="quote-break"> a small leak will sink a great ship.</span></div>
           <div style="white-space: nowrap;">
             <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
+            <button onclick="untickAll()" style="background: #555; margin-right: 6px" title="Set every row back to active — new month start">↺ Untick All</button>
             <button onclick="manualSave()">Save
               <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
             </button>
@@ -779,6 +977,22 @@
       </div>
     </div>
 
+    <!-- Floating popovers: row-state chooser + promote-target chooser -->
+    <div class="state-popover" id="statePopover" style="display: none">
+      <div class="pop-current" id="popCurrent">Current: 0 times | RM 0.00 (spent)</div>
+      <div class="pop-custom">Update: <input type="number" id="popTimesPaid" min="0" placeholder="times" /> <button onclick="popSetTimesPaid()">set</button></div>
+    </div>
+    <div class="state-popover" id="cadencePopover" style="display: none">
+      <button data-cad="daily" onclick="popPickCadence('daily')">Daily</button>
+      <button data-cad="weekly" onclick="popPickCadence('weekly')">Weekly</button>
+      <div class="pop-custom"><input type="number" id="popCadenceX" min="1" placeholder="X" /> times <button onclick="popSetCadenceX()">set</button></div>
+    </div>
+    <div class="state-popover" id="promotePopover" style="display: none"></div>
+    <div class="undo-toast" id="undoToast" style="display: none">
+      <span id="undoToastMsg"></span>
+      <button onclick="undoToastAction()">Undo</button>
+    </div>
+
     <script>
       /* HAMBURGER MENU */
       function toggleHamburger() {
@@ -792,19 +1006,54 @@
       });
 
       /* SAVE */
-      function manualSave() {
-        const data = collectData();
-        localStorage.setItem("budgetData", JSON.stringify(data));
-        console.log("Saved:", data);
+      let appLoaded = false;
+      let autoSaveTimer = null;
 
+      function saveData(msg) {
+        localStorage.setItem("budgetData", JSON.stringify(collectData()));
         const status = document.getElementById("saveStatus");
-        status.textContent = "✓ Saved";
-        setTimeout(() => {
-          status.textContent = "";
-        }, 2000);
+        status.textContent = msg;
+        clearTimeout(status._t);
+        status._t = setTimeout(() => { status.textContent = ""; }, 2000);
       }
 
+      // Manual = the Save button. Auto = any other change once the app has loaded.
+      function manualSave() { saveData("✓ Saved"); }
+      function autoSaveNow() { if (appLoaded) saveData("⟳ Auto Saved"); }
+      function autoSaveDebounced() {
+        if (!appLoaded) return;
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(autoSaveNow, 600);
+      }
+
+      // Shared input handlers for commitment rows
+      function onRowInput() { calculate(); autoSaveDebounced(); }
+      function onNotesInput() { autoSaveDebounced(); }
+
       /* SALARY CALCULATION */
+
+      // Estimate monthly PCB (Potongan Cukai Bulanan) from the resident progressive
+      // brackets. Annualise income, subtract personal relief (RM9,000) + EPF relief
+      // (capped RM4,000), tax the chargeable amount, apply the RM400 rebate (chargeable
+      // ≤ RM35,000), divide by 12. A ballpark — real PCB depends on extra reliefs, so
+      // the PCB field stays editable as an override.
+      function computePCB(monthlyTotal, monthlyEpf) {
+        const chargeable = monthlyTotal * 12 - 9000 - Math.min(monthlyEpf * 12, 4000);
+        if (chargeable <= 0) return 0;
+        // [upper bound of band, marginal rate from previous bound]
+        const bands = [
+          [5000, 0], [20000, 0.01], [35000, 0.03], [50000, 0.06],
+          [70000, 0.11], [100000, 0.19], [400000, 0.25],
+          [600000, 0.26], [2000000, 0.28], [Infinity, 0.3],
+        ];
+        let tax = 0, prev = 0;
+        for (const [cap, rate] of bands) {
+          if (chargeable > cap) { tax += (cap - prev) * rate; prev = cap; }
+          else { tax += (chargeable - prev) * rate; break; }
+        }
+        if (chargeable <= 35000) tax = Math.max(0, tax - 400); // RM400 rebate
+        return tax / 12;
+      }
 
       // Used during load — only updates display fields, does NOT call calculate()
       // (rows don't exist in the DOM yet during load, so calculate() would be premature)
@@ -814,15 +1063,28 @@
         let total = gross + other;
         let deductionsEnabled = document.getElementById("deductionsEnabled").checked;
 
+        // SOCSO / EIS / LINDUNG 24 use the statutory RM6,000 wage ceiling; EPF has none
+        let capped = Math.min(total, 6000);
         let epf = deductionsEnabled ? total * 0.11 : 0;
-        let socso = deductionsEnabled ? total * 0.005 : 0;
-        let eis = deductionsEnabled ? total * 0.002 : 0;
+        let socso = deductionsEnabled ? capped * 0.005 : 0;
+        let eis = deductionsEnabled ? capped * 0.002 : 0;
+        // SKBBK "LINDUNG 24 Jam" — employee-borne, Phase 1 rate (from June 2026)
+        let lindung = deductionsEnabled ? capped * 0.0075 : 0;
 
+        // PCB auto-estimate; the field is an override — blank means "use the estimate"
+        let pcbAuto = deductionsEnabled ? computePCB(total, epf) : 0;
         let taxInput = document.getElementById("tax").value;
-        let tax = deductionsEnabled ? (parseFloat(taxInput) || 0) : 0;
-        let taxEntered = taxInput.trim() !== "" && taxInput.trim() !== "0";
+        let taxOverride = taxInput.trim() !== "";
+        let tax = deductionsEnabled ? (taxOverride ? (parseFloat(taxInput) || 0) : pcbAuto) : 0;
+        // Below the tax threshold PCB is Not Applicable — swap the whole input row for a text line.
+        // Typing an override (taxInput not blank) forces the row back so the manual figure is editable.
+        const pcbNotApplicable = deductionsEnabled && gross > 0 && pcbAuto <= 0 && taxInput.trim() === "";
+        document.getElementById("pcbRow").style.display = pcbNotApplicable ? "none" : "";
+        document.getElementById("pcbNA").style.display = pcbNotApplicable ? "" : "none";
+        document.getElementById("pcbHint").style.display = pcbNotApplicable ? "none" : "";
+        document.getElementById("tax").placeholder = pcbAuto > 0 ? pcbAuto.toFixed(0) : "0";
 
-        let net = total - (epf + socso + eis + tax);
+        let net = total - (epf + socso + eis + lindung + tax);
 
         // Dim the deductions col when disabled
         const deductionsBox = document.getElementById("deductionsEnabled").closest(".breakdown-box");
@@ -831,6 +1093,7 @@
         document.getElementById("epfVal").innerText = epf.toFixed(2);
         document.getElementById("socsoVal").innerText = socso.toFixed(2);
         document.getElementById("eisVal").innerText = eis.toFixed(2);
+        document.getElementById("lindungVal").innerText = lindung.toFixed(2);
         document.getElementById("netDisplay").innerText =
           gross === 0 ? "—" : "RM " + net.toFixed(2);
 
@@ -842,16 +1105,323 @@
 
         // Keep hidden net input in sync so calculate() still reads it correctly
         document.getElementById("net").value = net.toFixed(2);
-
-        // Show warning if gross is filled but tax hasn't been entered (only when deductions on)
-        const warning = document.getElementById("taxWarning");
-        warning.style.display = gross > 0 && deductionsEnabled && !taxEntered ? "block" : "none";
       }
 
       // Used on user input — updates display AND recalculates totals
       function calculateSalary() {
         calculateSalaryDisplay();
         calculate();
+      }
+
+      /* AMOUNT MATH — Amount fields accept + - * / ( ) expressions, e.g. "20*30" */
+
+      function evalAmount(str) {
+        if (str == null) return 0;
+        str = String(str).trim();
+        if (str === "") return 0;
+        if (!/^[\d+\-*/().\s]+$/.test(str)) return 0;
+        try {
+          const v = Function('"use strict"; return (' + str + ")")();
+          return Number.isFinite(v) ? v : 0;
+        } catch (e) {
+          return 0;
+        }
+      }
+
+      /* ROW STATES — active | paid (dimmed, counts full) | ongoing (counts prorated) */
+
+      // Ongoing rows: the total spreads over N parts between the START DAY and
+      // month end. The start day = the day the row was marked ◐ (stored in
+      // `since`); rows marked in an earlier month (or old saves) count from the 1st.
+      // daily = one part per remaining day, weekly = 4, bi-weekly = 2, custom = N.
+      // Date-based ESTIMATE of how many installments have elapsed this month.
+      // Only a starting suggestion — the user corrects it via the popover "Update" line.
+      function autoElapsed(cadence, since) {
+        const now = new Date();
+        const today = now.getDate();
+        const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        let start = 1;
+        if (since) {
+          const d = new Date(since);
+          if (!isNaN(d) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth())
+            start = d.getDate();
+        }
+        if (today < start) return 0;
+        const span = dim - start + 1;
+        const n = cadenceParts(cadence, since);
+        return Math.min(Math.floor((today - start) / (span / n)) + 1, n);
+      }
+
+      // Amount spent so far on an ongoing row = per-installment × times paid.
+      // Times paid = the user's manual "Update" value when set, else the date estimate.
+      function ongoingSpent(total, cadence, since, timesOverride) {
+        const n = cadenceParts(cadence, since);
+        let paid;
+        if (timesOverride !== undefined && timesOverride !== "" && !isNaN(parseInt(timesOverride)))
+          paid = Math.min(Math.max(0, parseInt(timesOverride)), n);
+        else paid = autoElapsed(cadence, since);
+        return (total * paid) / n;
+      }
+
+      function applyRowState(row) {
+        const st = row.dataset.state || "active";
+        row.classList.toggle("row-paid", st === "paid");
+        const paidBtn = row.querySelector(".state-btn");
+        paidBtn.textContent = st === "paid" ? "↺" : "✓";
+        paidBtn.title = st === "paid" ? "Paid — click to restore" : "Mark as paid (full amount)";
+        const ongBtn = row.querySelector(".ongoing-btn");
+        if (ongBtn) ongBtn.classList.toggle("ongoing-active", st === "ongoing");
+        // Amount-cell badge: shows the cadence, visible only when the row is ongoing
+        const badge = row.querySelector(".cadence-badge");
+        if (badge) {
+          if (st === "ongoing") {
+            const c = row.dataset.cadence || "daily";
+            badge.textContent = /^\d+$/.test(c) ? c + " times" : c;
+            badge.style.display = "";
+          } else {
+            badge.style.display = "none";
+          }
+        }
+      }
+
+      function setRowState(row, state, cadence) {
+        row.dataset.state = state;
+        if (cadence !== undefined) row.dataset.cadence = cadence;
+        if (state === "ongoing" && !row.dataset.since) row.dataset.since = new Date().toISOString().slice(0, 10);
+        applyRowState(row);
+        calculate();
+        autoSaveNow();
+      }
+
+      let popTargetRow = null;
+
+      // Installments a cadence splits the month total into (daily = days in month, weekly = 4)
+      function cadenceParts(cadence, since) {
+        const now = new Date();
+        const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        if (cadence === "weekly") return 4;
+        return dim; // daily
+      }
+
+      // Row 1: "Current: X times | RM amount×X (spent)". Row 2: Update input, capped at N.
+      function syncPopover(row) {
+        const n = rowInstallments(row);
+        const times = Math.min(parseInt(row.dataset.times) || 0, n);
+        const amount = evalAmount(row.cells[1].querySelector("input").value);
+        document.getElementById("popCurrent").textContent =
+          "Current: " + times + " times | RM " + (amount * times).toFixed(2) + " (spent)";
+        const tp = document.getElementById("popTimesPaid");
+        tp.max = n; // limit = installments this month
+        tp.value = (row.dataset.times !== undefined && row.dataset.times !== "") ? String(times) : "";
+      }
+
+      // ✓ button — toggle paid / restore. NO popup, just gray the row out.
+      function onPaidBtn(btn, e) {
+        e.stopPropagation();
+        const row = btn.closest("tr");
+        setRowState(row, row.dataset.state === "paid" ? "active" : "paid");
+      }
+
+      // ◐ button (actions) — open the CADENCE chooser: Daily / Weekly / X times
+      function onOngoingBtn(btn, e) {
+        e.stopPropagation();
+        popTargetRow = btn.closest("tr");
+        syncCadencePopover(popTargetRow);
+        showPopover(document.getElementById("cadencePopover"), btn);
+      }
+
+      // Amount-cell badge — open the TIMES chooser (Current / Update)
+      function onBadge(el, e) {
+        e.stopPropagation();
+        popTargetRow = el.closest("tr");
+        syncPopover(popTargetRow);
+        showPopover(document.getElementById("statePopover"), el);
+      }
+
+      // Reflect the row's current cadence in the cadence popover
+      function syncCadencePopover(row) {
+        const pop = document.getElementById("cadencePopover");
+        const cadence = row.dataset.cadence || "daily";
+        const ongoing = row.dataset.state === "ongoing";
+        pop.querySelectorAll("button[data-cad]").forEach((b) =>
+          b.classList.toggle("pop-sel", ongoing && b.dataset.cad === cadence));
+        document.getElementById("popCadenceX").value = /^\d+$/.test(cadence) ? cadence : "";
+      }
+
+      // Clamp a row's stored times-paid to its current installment count
+      function capTimesToInstallments(row) {
+        const n = rowInstallments(row);
+        if ((parseInt(row.dataset.times) || 0) > n) {
+          row.dataset.times = String(n);
+          calculate();
+        }
+      }
+
+      // Daily / Weekly — set the cadence, OR click the ACTIVE one again to turn ongoing OFF
+      function popPickCadence(c) {
+        if (!popTargetRow) return;
+        const isActiveCadence =
+          popTargetRow.dataset.state === "ongoing" && (popTargetRow.dataset.cadence || "daily") === c;
+        if (isActiveCadence) {
+          // undo → back to a plain row; calculate() drops its amount×times from Balance
+          setRowState(popTargetRow, "active");
+        } else {
+          setRowState(popTargetRow, "ongoing", c);
+          capTimesToInstallments(popTargetRow);
+        }
+        autoSaveNow();
+        syncCadencePopover(popTargetRow);
+      }
+
+      // "X times" — set a custom count, OR re-set the same count to turn ongoing OFF
+      function popSetCadenceX() {
+        if (!popTargetRow) return;
+        const n = parseInt(document.getElementById("popCadenceX").value);
+        if (!n || n < 1) return;
+        const isActiveCadence =
+          popTargetRow.dataset.state === "ongoing" && popTargetRow.dataset.cadence === String(n);
+        if (isActiveCadence) {
+          setRowState(popTargetRow, "active");
+        } else {
+          setRowState(popTargetRow, "ongoing", String(n));
+          capTimesToInstallments(popTargetRow);
+        }
+        autoSaveNow();
+        syncCadencePopover(popTargetRow);
+      }
+
+      function showPopover(pop, anchor) {
+        closePopovers();
+        pop.style.display = "flex";
+        const r = anchor.getBoundingClientRect();
+        const maxLeft = window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8;
+        pop.style.left = Math.min(r.left + window.scrollX, maxLeft) + "px";
+        pop.style.top = r.bottom + window.scrollY + 4 + "px";
+      }
+
+      function closePopovers() {
+        document.getElementById("statePopover").style.display = "none";
+        document.getElementById("cadencePopover").style.display = "none";
+        document.getElementById("promotePopover").style.display = "none";
+      }
+
+      // "set" — save the times, recompute the current total. Reflects on BALANCE only;
+      // the popover stays open and refreshes its "Current:" line. Nothing else changes.
+      function popSetTimesPaid() {
+        if (!popTargetRow) return;
+        if (popTargetRow.dataset.state !== "ongoing") popTargetRow.dataset.state = "ongoing";
+        const n = rowInstallments(popTargetRow);
+        const v = document.getElementById("popTimesPaid").value;
+        // times paid can't exceed the month's installments (N)
+        const times = v === "" ? 0 : Math.min(Math.max(0, parseInt(v) || 0), n);
+        popTargetRow.dataset.times = String(times);
+        applyRowState(popTargetRow);
+        calculate();
+        syncPopover(popTargetRow);
+        autoSaveNow();
+      }
+
+      document.addEventListener("click", function (e) {
+        if (
+          !e.target.closest(".state-popover") &&
+          !e.target.closest(".ongoing-btn") &&
+          !e.target.closest(".cadence-badge") &&
+          !e.target.closest(".promote-btn")
+        ) {
+          closePopovers();
+        }
+      });
+
+      function untickAll() {
+        if (!confirm("Restore all paid / ongoing rows back to active?")) return;
+        document.querySelectorAll(".category table tr").forEach((r) => {
+          if (r.dataset.state && r.dataset.state !== "active") {
+            r.dataset.state = "active";
+            applyRowState(r);
+          }
+        });
+        calculate();
+        autoSaveNow();
+      }
+
+      /* PROMOTE — move a Considerations row into a commitment category */
+
+      function promoteRow(btn) {
+        const row = btn.closest("tr");
+        const cats = [...document.querySelectorAll(".category")];
+        if (cats.length === 0) {
+          alert("Add a commitment category first.");
+          return;
+        }
+        if (cats.length === 1) {
+          doPromote(row, cats[0]);
+          return;
+        }
+        const pop = document.getElementById("promotePopover");
+        pop.innerHTML = "";
+        cats.forEach((cat) => {
+          const b = document.createElement("button");
+          b.textContent = "→ " + cat.querySelector(".title").textContent;
+          b.onclick = () => {
+            doPromote(row, cat);
+            closePopovers();
+          };
+          pop.appendChild(b);
+        });
+        showPopover(pop, btn);
+      }
+
+      function doPromote(row, cat) {
+        const item = row.cells[0].querySelector("input").value;
+        const amount = row.cells[1].querySelector("input").value;
+        const notes = row.cells[3].querySelector("input").value;
+
+        addRow(cat.querySelector(".category-body button"), item, amount, notes);
+        const catTable = cat.querySelector("table");
+        const promoted = catTable.rows[catTable.rows.length - 1];
+        row.remove();
+        recalcSubtotals("planningTable");
+        autoSaveNow();
+
+        const catName = cat.querySelector(".title").textContent;
+        showUndoToast('Moved "' + (item || "row") + '" into ' + catName, () => {
+          // live values if the promoted row still exists, seeded snapshot otherwise
+          if (promoted.isConnected) {
+            addPlanningRow(
+              promoted.cells[0].querySelector("input").value,
+              promoted.cells[1].querySelector("input").value,
+              promoted.cells[3].querySelector("input").value,
+            );
+            promoted.remove();
+          } else {
+            addPlanningRow(item, amount, notes);
+          }
+          calculate();
+          autoSaveNow();
+        });
+      }
+
+      /* UNDO TOAST — one shared element, 5s auto-dismiss */
+
+      let undoFn = null;
+      let undoTimer = null;
+
+      function showUndoToast(msg, fn) {
+        undoFn = fn;
+        document.getElementById("undoToastMsg").textContent = msg;
+        document.getElementById("undoToast").style.display = "flex";
+        clearTimeout(undoTimer);
+        undoTimer = setTimeout(hideUndoToast, 5000);
+      }
+
+      function hideUndoToast() {
+        document.getElementById("undoToast").style.display = "none";
+        undoFn = null;
+      }
+
+      function undoToastAction() {
+        if (undoFn) undoFn();
+        hideUndoToast();
       }
 
       /* CATEGORY SYSTEM */
@@ -903,6 +1473,10 @@
             r.item,
             r.amount,
             r.notes,
+            r.state, // missing on old saves → addRow defaults to "active"
+            r.cadence,
+            r.since,
+            r.times,
           );
         });
 
@@ -940,7 +1514,7 @@
           span.textContent = newName;
           span.ondblclick = (ev) => renameCategory(ev, span);
           input.replaceWith(span);
-          save();
+          autoSaveNow(); // was save() — undefined, threw ReferenceError on every rename
         }
         input.addEventListener("blur", commit);
         input.addEventListener("keydown", (ev) => {
@@ -955,7 +1529,7 @@
         calculate();
       }
 
-      function addRow(btn, item = "", amount = "", notes = "") {
+      function addRow(btn, item = "", amount = "", notes = "", state = "active", cadence = "", since = "", times = "") {
         let table = btn.closest(".category-body").querySelector("table");
         let row = table.insertRow();
 
@@ -969,8 +1543,13 @@
         <td></td>
         <td class="running">0</td>
         <td></td>
-        <td><button class="danger" onclick="deleteRow(this)" style="display:block;margin:auto;">del</button></td>
+        <td style="text-align:center; white-space:nowrap;"><button class="state-btn" onclick="onPaidBtn(this, event)">✓</button> <button class="ongoing-btn" onclick="onOngoingBtn(this, event)">◐</button> <button class="danger" onclick="deleteRow(this)">del</button></td>
     `;
+
+        row.dataset.state = state || "active";
+        row.dataset.cadence = cadence || "";
+        row.dataset.since = since || "";
+        row.dataset.times = times || "";
 
         const makeInput = (val, handler) => {
           const inp = document.createElement("input");
@@ -979,32 +1558,85 @@
           return inp;
         };
 
-        row.cells[0].appendChild(makeInput(item, calculate));
-        row.cells[1].appendChild(makeInput(amount, calculate));
-        row.cells[3].appendChild(makeInput(notes, null));
+        row.cells[0].appendChild(makeInput(item, onRowInput));
+        // Amount cell: input + cadence badge (badge opens the Current/Update times popover)
+        const amtWrap = document.createElement("div");
+        amtWrap.style.cssText = "display:flex;align-items:center;gap:4px;";
+        amtWrap.appendChild(makeInput(amount, onRowInput));
+        const badge = document.createElement("span");
+        badge.className = "cadence-badge";
+        badge.style.display = "none";
+        badge.title = "Adjust times paid";
+        badge.onclick = (ev) => onBadge(badge, ev);
+        amtWrap.appendChild(badge);
+        row.cells[1].appendChild(amtWrap);
+        row.cells[3].appendChild(makeInput(notes, onNotesInput));
 
+        applyRowState(row);
         calculate();
       }
 
       function deleteRow(btn) {
-        btn.closest("tr").remove();
+        const row = btn.closest("tr");
+        // ":scope > button" = the "Add Row" button (direct child), never a row's own
+        // button — capturing a row button would detach when the row is removed.
+        const addBtn = row.closest(".category-body").querySelector(":scope > button");
+        const snap = {
+          item: row.cells[0].querySelector("input").value,
+          amount: row.cells[1].querySelector("input").value,
+          notes: row.cells[3].querySelector("input").value,
+          state: row.dataset.state, cadence: row.dataset.cadence,
+          since: row.dataset.since, times: row.dataset.times,
+        };
+        row.remove();
         calculate();
+        autoSaveNow();
+        showUndoToast('Deleted "' + (snap.item || "row") + '"', () => {
+          addRow(addBtn, snap.item, snap.amount, snap.notes, snap.state, snap.cadence, snap.since, snap.times);
+          calculate();
+          autoSaveNow();
+        });
+      }
+
+      // Installments an ongoing row has THIS month (the max times, and the Sub-Total multiplier):
+      //   daily  = days in the current month (28/29/30/31)
+      //   weekly = weeks in the current month = ceil(days ÷ 7)
+      //   X      = the custom number the user set
+      function rowInstallments(row) {
+        const c = row.dataset.cadence || "daily";
+        const now = new Date();
+        const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        if (c === "weekly") return Math.ceil(dim / 7);
+        if (/^\d+$/.test(c)) return Math.max(1, parseInt(c));
+        return dim; // daily
       }
 
       /* CALCULATE COMMITMENTS */
 
       function calculate() {
         let grand = 0;
+        let spent = 0;
 
         document.querySelectorAll(".category").forEach((cat) => {
           let rows = cat.querySelectorAll("table tr");
           let running = 0;
 
           for (let i = 1; i < rows.length; i++) {
-            let val =
-              parseFloat(rows[i].cells[1].querySelector("input").value) || 0;
-            running += val;
-            rows[i].cells[2].innerText = running.toFixed(2);
+            const row = rows[i];
+            let val = evalAmount(row.cells[1].querySelector("input").value);
+            let planned = val;
+            if (row.dataset.state === "ongoing") {
+              // Sub-Total / Grand Total = full month = amount × installments (cadence count)
+              const n = rowInstallments(row);
+              planned = val * n;
+              // Balance = amount × times actually paid so far (capped at n)
+              const times = Math.min(parseInt(row.dataset.times) || 0, n);
+              spent += val * times;
+            } else if (row.dataset.state === "paid") {
+              spent += val; // one-time, fully paid
+            }
+            running += planned;
+            row.cells[2].innerText = running.toFixed(2);
           }
 
           // Show sub-total in the header for when the category is collapsed
@@ -1035,6 +1667,18 @@
           label.className = "neutral";
           document.getElementById("surplusLabel").innerText = "No Extra Money";
         }
+
+        // BALANCE = salary − actually spent (paid rows full + ongoing rows prorated)
+        let gross = parseFloat(document.getElementById("gross").value) || 0;
+        const balanceEl = document.getElementById("balanceDisplay");
+        if (gross === 0) {
+          balanceEl.innerText = "RM —";
+          balanceEl.classList.remove("neg");
+        } else {
+          const bal = net - spent;
+          balanceEl.innerText = "RM " + bal.toFixed(2);
+          balanceEl.classList.toggle("neg", bal < 0);
+        }
       }
 
       /* DRAG REORDER */
@@ -1059,12 +1703,17 @@
         let table = document.getElementById(tableId);
         let row = table.insertRow();
 
+        // Considerations rows get a promote button; Breakdown rows stay del-only
+        const promote =
+          tableId === "planningTable"
+            ? '<button class="promote-btn" title="Move into a commitment category" onclick="promoteRow(this)">↑</button> '
+            : "";
         row.innerHTML = `
         <td></td>
         <td></td>
         <td class="subtotal">0</td>
         <td></td>
-        <td><button class="danger" onclick="this.closest('tr').remove(); recalcSubtotals('${tableId}')" style="display:block;margin:auto;">del</button></td>
+        <td style="text-align:center; white-space:nowrap;">${promote}<button class="danger" onclick="this.closest('tr').remove(); recalcSubtotals('${tableId}')">del</button></td>
     `;
 
         const makeInput = (val, handler) => {
@@ -1088,8 +1737,7 @@
         let rows = table.querySelectorAll("tr");
         let running = 0;
         for (let i = 1; i < rows.length; i++) {
-          let val =
-            parseFloat(rows[i].cells[1].querySelector("input").value) || 0;
+          let val = evalAmount(rows[i].cells[1].querySelector("input").value);
           running += val;
           rows[i].cells[2].innerText = running.toFixed(2);
         }
@@ -1127,6 +1775,10 @@
               item: r.cells[0].querySelector("input").value,
               amount: r.cells[1].querySelector("input").value,
               notes: r.cells[3].querySelector("input").value,
+              state: r.dataset.state || "active",
+              cadence: r.dataset.cadence || "",
+              since: r.dataset.since || "",
+              times: r.dataset.times || "",
             });
           });
 
@@ -1317,6 +1969,8 @@
             { item: "Commitment", amount: 500 }
           ]);
         }
+
+        appLoaded = true; // enable auto-save only after the initial load has finished
       }
 
       document.addEventListener("DOMContentLoaded", loadAuto);
