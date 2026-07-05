@@ -517,16 +517,19 @@
           min-width: 280px;
         }
 
-        /* Trim Item; give Amount room for the input + cadence badge */
-        table th:nth-child(1),
-        table td:nth-child(1) {
-          width: 78px;
+        /* Item : Amount ≈ 70:30 normally, 60:40 when a cadence badge shows.
+           Actions column takes the rest; table-layout:fixed makes the % widths stick. */
+        .category table {
+          table-layout: fixed;
         }
-        table th:nth-child(2),
-        table td:nth-child(2) {
-          width: auto;
-          min-width: 148px;
-        }
+        .category table th:nth-child(1),
+        .category table td:nth-child(1) { width: 52%; }
+        .category table th:nth-child(2),
+        .category table td:nth-child(2) { width: 22%; }
+        .category table.has-ongoing th:nth-child(1),
+        .category table.has-ongoing td:nth-child(1) { width: 44%; }
+        .category table.has-ongoing th:nth-child(2),
+        .category table.has-ongoing td:nth-child(2) { width: 30%; }
 
         /* Hide Sub-Total + Notes columns on mobile (too cramped otherwise) */
         table th:nth-child(3),
@@ -1636,12 +1639,14 @@
         document.querySelectorAll(".category").forEach((cat) => {
           let rows = cat.querySelectorAll("table tr");
           let running = 0;
+          let anyOngoing = false;
 
           for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             let val = evalAmount(row.cells[1].querySelector("input").value);
             let planned = val;
             if (row.dataset.state === "ongoing") {
+              anyOngoing = true;
               // Sub-Total / Grand Total = full month = amount × installments (cadence count)
               const n = rowInstallments(row);
               planned = val * n;
@@ -1654,6 +1659,10 @@
             running += planned;
             row.cells[2].innerText = running.toFixed(2);
           }
+
+          // Widen the Amount column (mobile) when this table shows a cadence badge
+          const catTable = cat.querySelector("table");
+          if (catTable) catTable.classList.toggle("has-ongoing", anyOngoing);
 
           // Show sub-total in the header for when the category is collapsed
           const catSubtotal = cat.querySelector(".cat-subtotal");
