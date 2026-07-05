@@ -998,7 +998,7 @@
     <!-- Floating popovers: row-state chooser + promote-target chooser -->
     <div class="state-popover" id="statePopover" style="display: none">
       <div class="pop-current" id="popCurrent">Current: 0 times | RM 0.00 (spent)</div>
-      <div class="pop-custom">Update: <input type="number" id="popTimesPaid" min="0" placeholder="times" /> <button onclick="popSetTimesPaid()">set</button></div>
+      <div class="pop-custom">Update: <input type="number" id="popTimesPaid" min="0" placeholder="times" /> / <span id="popMaxTimes">0</span> <button onclick="popSetTimesPaid()">set</button></div>
     </div>
     <div class="state-popover" id="cadencePopover" style="display: none">
       <button data-cad="daily" onclick="popPickCadence('daily')">Daily</button>
@@ -1232,6 +1232,7 @@
         const tp = document.getElementById("popTimesPaid");
         tp.max = n; // limit = installments this month
         tp.value = (row.dataset.times !== undefined && row.dataset.times !== "") ? String(times) : "";
+        document.getElementById("popMaxTimes").textContent = n; // "/ N" = month total installments
       }
 
       // ✓ button — toggle paid / restore. NO popup, just gray the row out.
@@ -1625,7 +1626,7 @@
         const c = row.dataset.cadence || "daily";
         const now = new Date();
         const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        if (c === "weekly") return Math.ceil(dim / 7);
+        if (c === "weekly") return Math.floor(dim / 7);
         if (/^\d+$/.test(c)) return Math.max(1, parseInt(c));
         return dim; // daily
       }
