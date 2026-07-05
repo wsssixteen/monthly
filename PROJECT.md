@@ -28,7 +28,7 @@ Plan spending by allocating money upfront each month, rather than tracking daily
 ### Salary Calculator (`salary-grid`)
 Three-column layout:
 1. **Income** — Gross Salary + optional Other Income inputs.
-2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%), LINDUNG 24/SKBBK (0.75%, PERKESO scheme effective June 2026, employee-borne, Phase-1 rate), and **PCB** (auto-estimated income tax). SOCSO/EIS/LINDUNG apply the statutory RM6,000 wage ceiling; EPF has none.
+2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%), SKBBK (0.75%, PERKESO "LINDUNG 24 Jam" scheme effective June 2026, employee-borne, Phase-1 rate — labelled by its acronym SKBBK to match payslips), and **PCB** (auto-estimated income tax). SOCSO/EIS/SKBBK apply the statutory RM6,000 wage ceiling; EPF has none. NOTE: the PCB estimate is a rough bracket calc and runs HIGH vs real payslips (real MTD excludes exempt allowances + uses the official cumulative formula) — it stays an editable override for that reason.
    - **PCB auto-estimate** (`computePCB()`): annualise income, subtract personal relief (RM9,000) + EPF relief (capped RM4,000), apply the resident progressive brackets, apply the RM400 rebate (chargeable ≤ RM35,000), divide by 12. A ballpark — the `#tax` field is an **override**: blank = use the estimate (shown as ghost placeholder), typed value = use that. Bracket table sourced from PwC/LHDN (verified 2026-07).
    - **"Not Applicable"**: PCB/MTD is legally mandatory for employers (Income Tax (Deduction from Remuneration) Rules 1994, in force since 1995) — but only bites when the employee is taxable. Single earners below ~RM2,833/mo (after EPF) owe none, and PCB < RM10/mo isn't deducted. When the auto-estimate is 0 (and no manual override typed) the **whole row is swapped** from `PCB: RM [input]` to a `#pcbNA` line reading **"PCB Not Applicable"**; typing an override forces the input row back.
    - The "Estimate — verify via PCB Calculator" hint (`#pcbHint`) sits in the right-column cell under the PCB input; hidden while N/A.
@@ -92,7 +92,8 @@ After a promote, the `#undoToast` appears bottom-center for 5s — **Undo** move
 - **Commitments header:** Title | Add Category (row 1), Totals full-width (row 2)
 - **Totals + Save on same row:** 💤 consideration — requires Option B (JS duplicate elements). Current behaviour kept.
 - **Item & Notes column width:** ⏳ reduce input length slightly for all 3 tables
-- Sub-Total column hidden (`display: none` on `nth-child(3)`)
+- Sub-Total **and Notes** columns hidden (`display: none` on `nth-child(3)` + `nth-child(4)`) — leaves Item / Amount / Actions so it isn't cramped
+- **Double-click any input** selects all its text (`document` dblclick → `input.select()`); dragging text inside an input no longer starts a category drag (`enableDrag` cancels `dragstart` when it originates from an input)
 - Tables: `min-width: 280px`, horizontal scroll on `.category-body` and `.planning`
 - Amount column: `width: 60px`
 - `.planning-row` stacks to column

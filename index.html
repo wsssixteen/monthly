@@ -158,7 +158,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
       }
 
       .net-divider {
@@ -516,16 +517,31 @@
           min-width: 280px;
         }
 
-        /* Amount column narrower */
+        /* Trim Item; give Amount room for the input + cadence badge */
+        table th:nth-child(1),
+        table td:nth-child(1) {
+          width: 78px;
+        }
         table th:nth-child(2),
         table td:nth-child(2) {
-          width: 60px;
+          width: auto;
+          min-width: 148px;
         }
 
-        /* Hide Sub-Total column on mobile */
+        /* Hide Sub-Total + Notes columns on mobile (too cramped otherwise) */
         table th:nth-child(3),
-        table td:nth-child(3) {
+        table td:nth-child(3),
+        table th:nth-child(4),
+        table td:nth-child(4) {
           display: none;
+        }
+
+        /* Include unchecked → collapse the deductions grid on mobile to save space */
+        .deductions-off .deductions-grid {
+          display: none;
+        }
+        .deductions-off {
+          opacity: 1 !important;
         }
       }
 
@@ -861,7 +877,7 @@
             <div class="deductions-col">
               <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
               <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
-              <div><span class="deduction-label">LINDUNG 24 (0.75%):</span> RM <span id="lindungVal">0</span></div>
+              <div><span class="deduction-label">SKBBK (0.75%):</span> RM <span id="lindungVal">0</span></div>
             </div>
             <div class="deductions-col">
               <div><span class="deduction-label">EIS (0.2%):</span> RM <span id="eisVal">0</span></div>
@@ -871,8 +887,7 @@
               </div>
               <div id="pcbNA" style="display:none"><span class="deduction-label">PCB Not Applicable</span></div>
               <div class="small" id="pcbHint" style="margin-top: 2px">
-                Estimate — verify via
-                <a href="https://payroll.my" target="_blank" style="color: #4caf50">PCB Calculator</a>
+                ≈ rough estimate · <a href="https://payroll.my" target="_blank" style="color: #4caf50">PCB Calc</a>
               </div>
             </div>
           </div>
@@ -925,7 +940,7 @@
           <div class="quote-line" style="margin-top: 0;">Beware of little expenses;<span class="quote-break"> a small leak will sink a great ship.</span></div>
           <div style="white-space: nowrap;">
             <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
-            <button onclick="untickAll()" style="background: #555; margin-right: 6px" title="Set every row back to active — new month start">↺ Untick All</button>
+            <button onclick="untickAll()" style="background: #555; margin-right: 6px" title="Set every row back to active — new month start">↺ Restart</button>
             <button onclick="manualSave()">Save
               <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
             </button>
@@ -1089,6 +1104,7 @@
         // Dim the deductions col when disabled
         const deductionsBox = document.getElementById("deductionsEnabled").closest(".breakdown-box");
         deductionsBox.style.opacity = deductionsEnabled ? "" : "0.35";
+        deductionsBox.classList.toggle("deductions-off", !deductionsEnabled);
 
         document.getElementById("epfVal").innerText = epf.toFixed(2);
         document.getElementById("socsoVal").innerText = socso.toFixed(2);
@@ -1684,9 +1700,19 @@
       /* DRAG REORDER */
 
       function enableDrag(el) {
-        el.addEventListener("dragstart", () => el.classList.add("dragging"));
+        el.addEventListener("dragstart", (e) => {
+          // don't drag the category when the user is selecting text inside an input
+          if (e.target.closest("input")) { e.preventDefault(); return; }
+          el.classList.add("dragging");
+        });
         el.addEventListener("dragend", () => el.classList.remove("dragging"));
       }
+
+      // Double-click any input to select all its contents, then type to replace.
+      // (Click-drag to select would otherwise start dragging the category panel.)
+      document.addEventListener("dblclick", (e) => {
+        if (e.target.tagName === "INPUT") e.target.select();
+      });
 
       categoriesDiv.addEventListener("dragover", (e) => {
         e.preventDefault();
