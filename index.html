@@ -1723,6 +1723,22 @@
         if (e.target.tagName === "INPUT") e.target.select();
       });
 
+      // A category is draggable (to reorder), but that blocks double-click / drag text
+      // selection inside its inputs. Turn the drag OFF while an input there is focused, so
+      // its inputs behave like the Income inputs (which have no draggable parent).
+      document.addEventListener("focusin", (e) => {
+        if (e.target.tagName === "INPUT") {
+          const cat = e.target.closest(".category");
+          if (cat) cat.draggable = false;
+        }
+      });
+      document.addEventListener("focusout", (e) => {
+        if (e.target.tagName === "INPUT") {
+          const cat = e.target.closest(".category");
+          if (cat) cat.draggable = true;
+        }
+      });
+
       categoriesDiv.addEventListener("dragover", (e) => {
         e.preventDefault();
         const dragging = document.querySelector(".dragging");
