@@ -307,6 +307,31 @@
         white-space: nowrap;
       }
 
+      .power-btn {
+        background: #2b2b2b;
+        color: #9e9e9e;
+        border: 1px solid #3a3a3a;
+        padding: 2px 6px;
+        margin-right: 4px;
+      }
+      .category.cat-disabled {
+        opacity: 0.45;
+      }
+      .category.cat-disabled .power-btn {
+        background: #4a3200;
+        color: #ffb300;
+        border-color: #ffb300;
+      }
+      body.light .power-btn {
+        background: #d8cfc2;
+        color: #555;
+        border-color: #b9ac99;
+      }
+      body.light .category.cat-disabled .power-btn {
+        background: #e8d3a8;
+        color: #b8762a;
+        border-color: #b8762a;
+      }
       .cat-subtotal {
         font-size:11px;
         color:#aaa;
@@ -1454,7 +1479,7 @@
         createCategory(name, []);
       }
 
-      function createCategory(name, rows) {
+      function createCategory(name, rows, disabled = false) {
         let container = document.createElement("div");
         container.className = "category";
         container.draggable = true;
@@ -1466,6 +1491,7 @@
                 <span class="title" title="Double-click to rename" ondblclick="renameCategory(event, this)"></span>
             </div>
             <span class="cat-subtotal"></span>
+            <button class="power-btn" title="Enable / disable this category" onclick="event.stopPropagation(); togglePower(this)">⏻</button>
             <button class="danger" onclick="event.stopPropagation(); deleteCategory(this)">x</button>
         </div>
         <div class="category-body">
@@ -1484,6 +1510,7 @@
 
         // textContent avoids XSS and attribute/property confusion
         container.querySelector(".title").textContent = name;
+        if (disabled) container.classList.add("cat-disabled");
 
         categoriesDiv.appendChild(container);
 
@@ -1502,6 +1529,12 @@
 
         enableDrag(container);
         // No save here — manualSave() is the only place saves are triggered
+      }
+
+      function togglePower(btn) {
+        btn.closest(".category").classList.toggle("cat-disabled");
+        calculate();
+        autoSaveNow();
       }
 
       function toggleCategory(el) {
@@ -1641,6 +1674,9 @@
           let rows = cat.querySelectorAll("table tr");
           let running = 0;
           let anyOngoing = false;
+          // Powered-off category: rows still show their sub-totals, but nothing
+          // counts toward Grand Total, Surplus or Balance
+          const off = cat.classList.contains("cat-disabled");
 
           for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -1653,9 +1689,9 @@
               planned = val * n;
               // Balance = amount × times actually paid so far (capped at n)
               const times = Math.min(parseInt(row.dataset.times) || 0, n);
-              spent += val * times;
+              if (!off) spent += val * times;
             } else if (row.dataset.state === "paid") {
-              spent += val; // one-time, fully paid
+              if (!off) spent += val; // one-time, fully paid
             }
             running += planned;
             row.cells[2].innerText = running.toFixed(2);
@@ -1671,7 +1707,7 @@
             catSubtotal.innerText =
               running > 0 ? "RM " + running.toFixed(2) : "";
 
-          grand += running;
+          if (!off) grand += running;
         });
 
         document.getElementById("grandTotal").innerText = grand.toFixed(2);
@@ -1765,7 +1801,7 @@
         <td></td>
         <td class="subtotal">0</td>
         <td></td>
-        <td style="text-align:center; white-space:nowrap;">${promote}<button class="danger" onclick="this.closest('tr').remove(); recalcSubtotals('${tableId}')">del</button></td>
+        <td style="text-align:center; white-space:nowrap;">${promote}<button class="danger" onclick="this.closest('tr').remove(); recalcSubtotals('${tableId}'); autoSaveNow()">del</button></td>
     `;
 
         const makeInput = (val, handler) => {
@@ -1775,11 +1811,14 @@
           return inp;
         };
 
-        row.cells[0].appendChild(makeInput(item, null));
+        row.cells[0].appendChild(makeInput(item, () => autoSaveDebounced()));
         row.cells[1].appendChild(
-          makeInput(amount, () => recalcSubtotals(tableId)),
+          makeInput(amount, () => {
+            recalcSubtotals(tableId);
+            autoSaveDebounced();
+          }),
         );
-        row.cells[3].appendChild(makeInput(notes, null));
+        row.cells[3].appendChild(makeInput(notes, () => autoSaveDebounced()));
 
         recalcSubtotals(tableId);
       }
@@ -1834,7 +1873,11 @@
             });
           });
 
-          data.categories.push({ name, rows });
+          data.categories.push({
+            name,
+            rows,
+            disabled: cat.classList.contains("cat-disabled"),
+          });
         });
 
         document.querySelectorAll("#planningTable tr").forEach((r, i) => {
@@ -1905,7 +1948,7 @@
 
           if (data.categories) {
             data.categories.forEach((cat) => {
-              createCategory(cat.name, cat.rows);
+              createCategory(cat.name, cat.rows, cat.disabled === true);
             });
           }
 
@@ -1975,13 +2018,18 @@
         }
 
         let raw = localStorage.getItem("budgetData");
-        if (!raw) return;
+        if (!raw) {
+          // First visit / cleared storage: still finish boot so auto-save activates
+          finishFreshBoot();
+          return;
+        }
 
         let data;
         try {
           data = JSON.parse(raw);
         } catch (e) {
           console.error("Corrupt save data, skipping load.", e);
+          finishFreshBoot();
           return;
         }
 
@@ -1996,7 +2044,7 @@
 
         if (data.categories) {
           data.categories.forEach((cat) => {
-            createCategory(cat.name, cat.rows || []);
+            createCategory(cat.name, cat.rows || [], cat.disabled === true);
           });
         }
 
@@ -2023,6 +2071,17 @@
         }
 
         appLoaded = true; // enable auto-save only after the initial load has finished
+      }
+
+      // Shared tail for the no-save / corrupt-save boot paths: seed the sample
+      // category and enable auto-save (previously these paths returned early and
+      // auto-save never activated for the whole session)
+      function finishFreshBoot() {
+        if (categoriesDiv && categoriesDiv.children.length === 0) {
+          createCategory("Long Term", [{ item: "Commitment", amount: 500 }]);
+        }
+        calculate();
+        appLoaded = true;
       }
 
       document.addEventListener("DOMContentLoaded", loadAuto);

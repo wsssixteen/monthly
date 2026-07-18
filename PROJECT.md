@@ -46,6 +46,7 @@ Core function: `calculateSalary()` — reads gross + other, computes deductions,
 - Drag-to-reorder categories.
 - Each category has a table of items (description + amount).
 - **Category rename:** double-click the title to edit inline; Enter/blur to confirm, Escape to cancel. Tooltip: "Double-click to rename".
+- **Category power toggle (`⏻`, left of `x`):** `togglePower()` — disables the whole category for the month: dims it (0.45 opacity, amber `⏻`), excludes it from Grand Total, Surplus AND Balance. Rows stay visible/editable and keep their Sub-Totals. Click again to re-enable. Persisted per category as `"disabled"` (old saves default to enabled).
 - Grand Total + Surplus/Deficit displayed in header.
 - Delete button uses `stopPropagation` so it doesn't trigger the toggle.
 
@@ -70,6 +71,10 @@ After a promote, the `#undoToast` appears bottom-center for 5s — **Undo** move
 
 ### Uncommitted & Breakdown Tables
 - Show how remaining money is allocated after commitments.
+- All three inputs (Item/Amount/Notes) auto-save on typing (`autoSaveDebounced`); row del auto-saves immediately. (Fixed 2026-07 — these inputs previously had no save handlers.)
+
+### Fresh-boot rule
+`loadAuto()`'s no-save and corrupt-save paths call `finishFreshBoot()` (seed sample category + `appLoaded = true`). Previously they returned early WITHOUT setting `appLoaded`, so on a first visit auto-save silently never activated for the whole session.
 
 ## Styling Conventions
 - Dark background: `#121212` / `#1b1b1b` / `#1e1e1e`
@@ -129,7 +134,7 @@ All quotes verified via web search unless marked otherwise. Style: `.quote-line`
   "other": "",
   "tax": "100",
   "deductionsEnabled": true,
-  "categories": [{ "name": "Housing", "rows": [{ "item": "Rent", "amount": "1200", "notes": "", "state": "active", "cadence": "", "since": "" }] }],
+  "categories": [{ "name": "Housing", "disabled": false, "rows": [{ "item": "Rent", "amount": "1200", "notes": "", "state": "active", "cadence": "", "since": "" }] }],
   "planning": [{ "item": "", "amount": "", "notes": "" }],
   "breakdown": [{ "item": "", "amount": "", "notes": "" }]
 }
