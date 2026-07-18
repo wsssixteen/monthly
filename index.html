@@ -48,18 +48,14 @@
       /* Hamburger — hidden on desktop */
       .hamburger-btn {
         display: none;
-        background: #ffb300;
+        background: #2e7d32;
         border: none;
-        color: #1b1b1b;
+        color: white;
         font-size: 18px;
         padding: 4px 10px;
         border-radius: 4px;
         cursor: pointer;
         line-height: 1;
-      }
-      body.light .hamburger-btn {
-        background: #b8762a;
-        color: #fff;
       }
       .hamburger-menu {
         display: none;
@@ -324,7 +320,8 @@
         display: none;
       }
       .restart-btn {
-        background: #555;
+        background: #ffb300;
+        color: #1b1b1b;
       }
       body.light .restart-btn {
         background: #b8762a;
@@ -431,20 +428,29 @@
         background: #2a2a2a;
         text-align: left;
       }
-      .state-popover button:hover {
-        background: #2e7d32;
+      /* Hover colours only on devices that truly hover — a phone tap otherwise
+         leaves the button "stuck" green until the next tap elsewhere */
+      @media (hover: hover) {
+        .state-popover button:hover {
+          background: #2e7d32;
+        }
+        .pop-del:hover {
+          background: #b71c1c !important;
+        }
+      }
+      /* Popover rows share one uniform width (matches the X-times row) */
+      .state-popover > button {
+        width: 100%;
+        box-sizing: border-box;
       }
       .pop-divider {
         height: 1px;
         background: #444;
         margin: 2px 0;
       }
-      /* Delete-row popover entry: mobile-only (desktop keeps the row's del button) */
+      /* Delete popover entry: mobile-only (desktop keeps the row's del button) */
       .pop-del {
         display: none;
-      }
-      .pop-del:hover {
-        background: #b71c1c !important;
       }
       .pop-custom {
         display: flex;
@@ -883,6 +889,14 @@
       body.light #saveStatus {
         color: #3a7a2a;
       }
+      /* "Saved" flash fades in and out */
+      #saveStatus {
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+      #saveStatus.show {
+        opacity: 1;
+      }
       /* Logo cursor hint */
       .topbar img {
         cursor: pointer;
@@ -961,7 +975,7 @@
           <div class="deductions-grid">
             <div class="deductions-col">
               <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
-              <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
+              <div><span class="deduction-label">SOCSO (0.5%):</span> RM <span id="socsoVal">0</span></div>
               <div><span class="deduction-label" id="skbbkLabel">SKBBK:</span> RM
                 <input type="number" id="skbbk" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated — type a value to override (opt-out: type 0)" />
               </div>
@@ -1027,9 +1041,7 @@
           <div class="quote-line" style="margin-top: 0;">Beware of little expenses;<span class="quote-break"> a small leak will sink a great ship.</span></div>
           <div style="white-space: nowrap;">
             <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
-            <button onclick="addCategory()">Add Category
-              <span class="info-tip">i<span class="tip-text">Everything auto-saves to this browser. Clearing browser's cache will remove saved data. Export for backup.</span></span>
-            </button>
+            <button onclick="addCategory()">Add Category</button>
           </div>
         </div>
 
@@ -1088,7 +1100,7 @@
       <button data-cad="weekly" onclick="popPickCadence('weekly')">Weekly</button>
       <div class="pop-custom"><input type="number" id="popCadenceX" min="1" placeholder="X" /> times <button onclick="popSetCadenceX()">set</button></div>
       <div class="pop-divider"></div>
-      <button class="pop-del" onclick="popDeleteRow()">🗑 Delete row</button>
+      <button class="pop-del" onclick="popDeleteRow()">Delete</button>
     </div>
     <div class="state-popover" id="promotePopover" style="display: none"></div>
     <div class="undo-toast" id="undoToast" style="display: none">
@@ -1116,8 +1128,9 @@
         localStorage.setItem("budgetData", JSON.stringify(collectData()));
         const status = document.getElementById("saveStatus");
         status.textContent = msg;
+        status.classList.add("show");
         clearTimeout(status._t);
-        status._t = setTimeout(() => { status.textContent = ""; }, 2000);
+        status._t = setTimeout(() => { status.classList.remove("show"); }, 1600);
       }
 
       // Manual = the Save button. Auto = any other change once the app has loaded.
@@ -1561,7 +1574,9 @@
       function addCategory() {
         let name = prompt("Commitment category name:");
         if (!name) return;
-        createCategory(name, []);
+        // Start with one empty row so the next tap is typing, not "Add Row"
+        createCategory(name, [{ item: "", amount: "" }]);
+        autoSaveNow();
       }
 
       function createCategory(name, rows, disabled = false) {
