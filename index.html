@@ -307,30 +307,47 @@
         white-space: nowrap;
       }
 
-      .power-btn {
-        background: #2b2b2b;
-        color: #9e9e9e;
-        border: 1px solid #3a3a3a;
+      .header-btns {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      /* Uniform size for all small action buttons (✓ ◐ del ↑ ⏻ x) */
+      .state-btn,
+      .ongoing-btn,
+      .promote-btn,
+      .power-btn,
+      table button.danger,
+      .category-header button.danger {
+        font-size: 11px;
         padding: 2px 6px;
-        margin-right: 4px;
+        line-height: 1.4;
+        min-width: 26px;
+        box-sizing: border-box;
+      }
+      /* Power button lights up while the category is ON */
+      .power-btn {
+        background: #ffb300;
+        color: #1b1b1b;
+        border: 1px solid #ffb300;
       }
       .category.cat-disabled {
         opacity: 0.45;
       }
       .category.cat-disabled .power-btn {
-        background: #4a3200;
-        color: #ffb300;
-        border-color: #ffb300;
+        background: #2b2b2b;
+        color: #9e9e9e;
+        border-color: #3a3a3a;
       }
       body.light .power-btn {
-        background: #d8cfc2;
-        color: #555;
-        border-color: #b9ac99;
+        background: #b8762a;
+        color: #fff;
+        border-color: #b8762a;
       }
       body.light .category.cat-disabled .power-btn {
-        background: #e8d3a8;
-        color: #b8762a;
-        border-color: #b8762a;
+        background: #d8cfc2;
+        color: #777;
+        border-color: #b9ac99;
       }
       .cat-subtotal {
         font-size:11px;
@@ -1491,8 +1508,10 @@
                 <span class="title" title="Double-click to rename" ondblclick="renameCategory(event, this)"></span>
             </div>
             <span class="cat-subtotal"></span>
-            <button class="power-btn" title="Enable / disable this category" onclick="event.stopPropagation(); togglePower(this)">⏻</button>
-            <button class="danger" onclick="event.stopPropagation(); deleteCategory(this)">x</button>
+            <span class="header-btns">
+              <button class="power-btn" title="Enable / disable this category" onclick="event.stopPropagation(); togglePower(this)">⏻</button>
+              <button class="danger" onclick="event.stopPropagation(); deleteCategory(this)">x</button>
+            </span>
         </div>
         <div class="category-body">
             <table>
