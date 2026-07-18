@@ -312,6 +312,23 @@
         gap: 4px;
         align-items: center;
       }
+      /* Open panel shows x; collapsed panel swaps it for the power button */
+      .category:not(.collapsed) .power-btn {
+        display: none;
+      }
+      .category.collapsed .header-btns button.danger {
+        display: none;
+      }
+      .restart-btn {
+        background: #555;
+      }
+      body.light .restart-btn {
+        background: #8a7a68;
+        color: #fff;
+      }
+      #deductionsEnabled {
+        accent-color: #2e7d32;
+      }
       /* Uniform size for all small action buttons (✓ ◐ del ↑ ⏻ x) */
       .state-btn,
       .ongoing-btn,
@@ -914,15 +931,16 @@
           <div class="commitments-title" style="display:flex;justify-content:space-between;align-items:center;">
             <span>Salary Deductions</span>
             <label style="font-size:11px;font-weight:normal;color:#aaa;cursor:pointer;letter-spacing:normal;text-transform:none;display:flex;align-items:center;gap:4px;">
-              <input type="checkbox" id="deductionsEnabled" checked onchange="calculateSalary(); autoSaveNow()" style="width:auto;background:unset;border:unset;padding:0;" />
-              Include
+              <input type="checkbox" id="deductionsEnabled" checked title="Include deductions" onchange="calculateSalary(); autoSaveNow()" style="width:auto;background:unset;border:unset;padding:0;" />
             </label>
           </div>
           <div class="deductions-grid">
             <div class="deductions-col">
               <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
               <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
-              <div><span class="deduction-label">SKBBK (0.75%):</span> RM <span id="lindungVal">0</span></div>
+              <div><span class="deduction-label">SKBBK:</span> RM
+                <input type="number" id="skbbk" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated — type a value to override (opt-out: type 0)" />
+              </div>
             </div>
             <div class="deductions-col">
               <div><span class="deduction-label">EIS (0.2%):</span> RM <span id="eisVal">0</span></div>
@@ -975,7 +993,7 @@
             </span>
           </div>
           <div class="commitments-add">
-            <button onclick="addCategory()">Add Category</button>
+            <button class="restart-btn" onclick="untickAll()" title="Set every row back to active — new month start">↺</button>
           </div>
         </div>
 
@@ -985,9 +1003,8 @@
           <div class="quote-line" style="margin-top: 0;">Beware of little expenses;<span class="quote-break"> a small leak will sink a great ship.</span></div>
           <div style="white-space: nowrap;">
             <span id="saveStatus" style="font-size: 12px; color: #4caf50; margin-right: 6px"></span>
-            <button onclick="untickAll()" style="background: #555; margin-right: 6px" title="Set every row back to active — new month start">↺ Restart</button>
-            <button onclick="manualSave()">Save
-              <span class="info-tip">i<span class="tip-text">Clearing browser's cache will remove saved data. Export for backup.</span></span>
+            <button onclick="addCategory()">Add Category
+              <span class="info-tip">i<span class="tip-text">Everything auto-saves to this browser. Clearing browser's cache will remove saved data. Export for backup.</span></span>
             </button>
           </div>
         </div>
@@ -1128,8 +1145,13 @@
         let epf = deductionsEnabled ? total * 0.11 : 0;
         let socso = deductionsEnabled ? capped * 0.005 : 0;
         let eis = deductionsEnabled ? capped * 0.002 : 0;
-        // SKBBK "LINDUNG 24 Jam" — employee-borne, Phase 1 rate (from June 2026)
-        let lindung = deductionsEnabled ? capped * 0.0075 : 0;
+        // SKBBK "LINDUNG 24 Jam" — employee-borne; no longer mandatory, so the
+        // field is an override like PCB: blank = auto-estimate, typed = use that (0 = opted out)
+        let lindungAuto = deductionsEnabled ? capped * 0.0075 : 0;
+        let skbbkInput = document.getElementById("skbbk").value;
+        let lindung = deductionsEnabled
+          ? (skbbkInput.trim() !== "" ? (parseFloat(skbbkInput) || 0) : lindungAuto)
+          : 0;
 
         // PCB auto-estimate; the field is an override — blank means "use the estimate"
         let pcbAuto = deductionsEnabled ? computePCB(total, epf) : 0;
@@ -1143,6 +1165,7 @@
         document.getElementById("pcbNA").style.display = pcbNotApplicable ? "" : "none";
         document.getElementById("pcbHint").style.display = pcbNotApplicable ? "none" : "";
         document.getElementById("tax").placeholder = pcbAuto > 0 ? pcbAuto.toFixed(0) : "0";
+        document.getElementById("skbbk").placeholder = lindungAuto.toFixed(2);
 
         let net = total - (epf + socso + eis + lindung + tax);
 
@@ -1154,7 +1177,6 @@
         document.getElementById("epfVal").innerText = epf.toFixed(2);
         document.getElementById("socsoVal").innerText = socso.toFixed(2);
         document.getElementById("eisVal").innerText = eis.toFixed(2);
-        document.getElementById("lindungVal").innerText = lindung.toFixed(2);
         document.getElementById("netDisplay").innerText =
           gross === 0 ? "—" : "RM " + net.toFixed(2);
 
@@ -1563,9 +1585,11 @@
         if (body.style.display === "none") {
           body.style.display = "block";
           arrow.innerText = "▼";
+          el.closest(".category").classList.remove("collapsed");
         } else {
           body.style.display = "none";
           arrow.innerText = "▶";
+          el.closest(".category").classList.add("collapsed");
         }
       }
 
@@ -1868,6 +1892,7 @@
           gross: document.getElementById("gross").value,
           other: document.getElementById("other").value,
           tax: document.getElementById("tax").value,
+          skbbk: document.getElementById("skbbk").value,
           deductionsEnabled: document.getElementById("deductionsEnabled").checked,
           categories: [],
           planning: [],
@@ -1962,6 +1987,7 @@
           document.getElementById("gross").value = data.gross || 0;
           document.getElementById("other").value = data.other || "";
           document.getElementById("tax").value = data.tax || "";
+          document.getElementById("skbbk").value = data.skbbk || "";
 
           calculateSalaryDisplay();
 
@@ -2055,6 +2081,7 @@
         document.getElementById("gross").value = data.gross || 0;
         document.getElementById("other").value = data.other || "";
         document.getElementById("tax").value = data.tax || "";
+        document.getElementById("skbbk").value = data.skbbk || "";
         document.getElementById("deductionsEnabled").checked = data.deductionsEnabled !== false;
 
         // calculateSalaryDisplay() only — does NOT call calculate().

@@ -28,11 +28,11 @@ Plan spending by allocating money upfront each month, rather than tracking daily
 ### Salary Calculator (`salary-grid`)
 Three-column layout:
 1. **Income** — Gross Salary + optional Other Income inputs.
-2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%), SKBBK (0.75%, PERKESO "LINDUNG 24 Jam" scheme effective June 2026, employee-borne, Phase-1 rate — labelled by its acronym SKBBK to match payslips), and **PCB** (auto-estimated income tax). SOCSO/EIS/SKBBK apply the statutory RM6,000 wage ceiling; EPF has none. NOTE: the PCB estimate is a rough bracket calc and runs HIGH vs real payslips (real MTD excludes exempt allowances + uses the official cumulative formula) — it stays an editable override for that reason.
+2. **Salary Deductions** — Auto-computed EPF (11%), SOCSO (~0.5%), EIS (0.2%), **SKBBK** (PERKESO "LINDUNG 24 Jam", employee-borne — an **override input like PCB** since the scheme became voluntary for local workers per the 8 Jul 2026 Cabinet decision: blank = auto-estimate at the current phase rate, typed value = use that, `0` = opted out. Phase rates: 0.75% Jun 2026–May 2028 → 1.00% yrs 3–5 → 1.25% yr 6+; when the phase changes, update the `0.0075` in `calculateSalaryDisplay()`. Estimate is `rate × min(wages, 6000)`; PERKESO's official bracket table rounds slightly differently — reported max RM44.65 vs raw RM45.00 — which is why it stays an overridable estimate), and **PCB** (auto-estimated income tax). SOCSO/EIS/SKBBK apply the statutory RM6,000 wage ceiling; EPF has none. NOTE: the PCB estimate is a rough bracket calc and runs HIGH vs real payslips (real MTD excludes exempt allowances + uses the official cumulative formula) — it stays an editable override for that reason.
    - **PCB auto-estimate** (`computePCB()`): annualise income, subtract personal relief (RM9,000) + EPF relief (capped RM4,000), apply the resident progressive brackets, apply the RM400 rebate (chargeable ≤ RM35,000), divide by 12. A ballpark — the `#tax` field is an **override**: blank = use the estimate (shown as ghost placeholder), typed value = use that. Bracket table sourced from PwC/LHDN (verified 2026-07).
    - **"Not Applicable"**: PCB/MTD is legally mandatory for employers (Income Tax (Deduction from Remuneration) Rules 1994, in force since 1995) — but only bites when the employee is taxable. Single earners below ~RM2,833/mo (after EPF) owe none, and PCB < RM10/mo isn't deducted. When the auto-estimate is 0 (and no manual override typed) the **whole row is swapped** from `PCB: RM [input]` to a `#pcbNA` line reading **"PCB Not Applicable"**; typing an override forces the input row back.
    - The "Estimate — verify via PCB Calculator" hint (`#pcbHint`) sits in the right-column cell under the PCB input; hidden while N/A.
-   - Toggled via an **"Include" checkbox** (top-right of the box). When unchecked, all deductions are zeroed and the box dims.
+   - Toggled via a bare checkbox (top-right of the box, `title="Include deductions"` — the "Include" word was dropped 2026-07). When unchecked, all deductions are zeroed and the box dims. Accent: green `#2e7d32` (dark) / amber via pre-existing `body.light` rule.
    - Checkbox state is saved and restored with the rest of the budget data.
 3. **Salary + Balance display** (`net-box`) — two `.net-half` halves split by a `.net-divider` line. Subtitles (`.net-subtitle`) render as their **own row** (`display:block`) under each label.
    - Left half: computed take-home. Label reads **NET SALARY** when deductions are on, **SALARY** when off; subtitle updates accordingly.
@@ -46,7 +46,9 @@ Core function: `calculateSalary()` — reads gross + other, computes deductions,
 - Drag-to-reorder categories.
 - Each category has a table of items (description + amount).
 - **Category rename:** double-click the title to edit inline; Enter/blur to confirm, Escape to cancel. Tooltip: "Double-click to rename".
-- **Category power toggle (`⏻`, left of `x`):** `togglePower()` — disables the whole category for the month: dims it (0.45 opacity, amber `⏻`), excludes it from Grand Total, Surplus AND Balance. Rows stay visible/editable and keep their Sub-Totals. Click again to re-enable. Persisted per category as `"disabled"` (old saves default to enabled).
+- **Category power toggle (`⏻`, left of `x`):** `togglePower()` — disables the whole category for the month: dims it (0.45 opacity), excludes it from Grand Total, Surplus AND Balance. Rows stay visible/editable and keep their Sub-Totals. Click again to re-enable. Lit amber while ON, muted grey when OFF. Persisted per category as `"disabled"` (old saves default to enabled).
+- **Header button swap on collapse:** open panel shows only `x`; collapsed panel hides `x` and shows `⏻` instead (`.collapsed` class set by `toggleCategory()`; CSS at `.category:not(.collapsed) .power-btn`). Note: to power a category on/off it must be collapsed first.
+- **No Save button (2026-07):** everything auto-saves, so the manual Save button was retired. Bottom-right now holds **Add Category** (+ the cache-warning info-tip); the commitments header's top-right holds **`↺`** (`.restart-btn`, Untick All — grey `#555` dark / `#8a7a68` light). `manualSave()` remains defined but unreferenced.
 - Grand Total + Surplus/Deficit displayed in header.
 - Delete button uses `stopPropagation` so it doesn't trigger the toggle.
 
@@ -133,6 +135,7 @@ All quotes verified via web search unless marked otherwise. Style: `.quote-line`
   "gross": "5000",
   "other": "",
   "tax": "100",
+  "skbbk": "",
   "deductionsEnabled": true,
   "categories": [{ "name": "Housing", "disabled": false, "rows": [{ "item": "Rent", "amount": "1200", "notes": "", "state": "active", "cadence": "", "since": "" }] }],
   "planning": [{ "item": "", "amount": "", "notes": "" }],
