@@ -48,14 +48,18 @@
       /* Hamburger — hidden on desktop */
       .hamburger-btn {
         display: none;
-        background: #2e7d32;
+        background: #ffb300;
         border: none;
-        color: white;
+        color: #1b1b1b;
         font-size: 18px;
         padding: 4px 10px;
         border-radius: 4px;
         cursor: pointer;
         line-height: 1;
+      }
+      body.light .hamburger-btn {
+        background: #b8762a;
+        color: #fff;
       }
       .hamburger-menu {
         display: none;
@@ -323,7 +327,7 @@
         background: #555;
       }
       body.light .restart-btn {
-        background: #8a7a68;
+        background: #b8762a;
         color: #fff;
       }
       #deductionsEnabled {
@@ -430,6 +434,18 @@
       .state-popover button:hover {
         background: #2e7d32;
       }
+      .pop-divider {
+        height: 1px;
+        background: #444;
+        margin: 2px 0;
+      }
+      /* Delete-row popover entry: mobile-only (desktop keeps the row's del button) */
+      .pop-del {
+        display: none;
+      }
+      .pop-del:hover {
+        background: #b71c1c !important;
+      }
       .pop-custom {
         display: flex;
         gap: 4px;
@@ -535,6 +551,14 @@
           display: none;
         }
         .hamburger-btn {
+          display: block;
+        }
+
+        /* Commitment rows: del moves into the cadence popover on mobile */
+        .category-body table button.danger {
+          display: none;
+        }
+        .pop-del {
           display: block;
         }
 
@@ -902,7 +926,7 @@
           </button>
           <button onclick="resetAll()" style="background: #555">Reset</button>
         </div>
-        <button class="hamburger-btn" onclick="toggleHamburger()">&#9776;</button>
+        <button class="hamburger-btn" onclick="toggleHamburger()">≡</button>
         <div class="hamburger-menu" id="hamburgerMenu">
           <button onclick="exportJSON(); closeHamburger()">Export</button>
           <button onclick="document.getElementById('importFile').click(); closeHamburger()">Import</button>
@@ -938,7 +962,7 @@
             <div class="deductions-col">
               <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
               <div><span class="deduction-label">SOCSO (~0.5%):</span> RM <span id="socsoVal">0</span></div>
-              <div><span class="deduction-label">SKBBK:</span> RM
+              <div><span class="deduction-label" id="skbbkLabel">SKBBK:</span> RM
                 <input type="number" id="skbbk" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated — type a value to override (opt-out: type 0)" />
               </div>
             </div>
@@ -1063,6 +1087,8 @@
       <button data-cad="daily" onclick="popPickCadence('daily')">Daily</button>
       <button data-cad="weekly" onclick="popPickCadence('weekly')">Weekly</button>
       <div class="pop-custom"><input type="number" id="popCadenceX" min="1" placeholder="X" /> times <button onclick="popSetCadenceX()">set</button></div>
+      <div class="pop-divider"></div>
+      <button class="pop-del" onclick="popDeleteRow()">🗑 Delete row</button>
     </div>
     <div class="state-popover" id="promotePopover" style="display: none"></div>
     <div class="undo-toast" id="undoToast" style="display: none">
@@ -1096,7 +1122,7 @@
 
       // Manual = the Save button. Auto = any other change once the app has loaded.
       function manualSave() { saveData("✓ Saved"); }
-      function autoSaveNow() { if (appLoaded) saveData("⟳ Auto Saved"); }
+      function autoSaveNow() { if (appLoaded) saveData("Saved"); }
       function autoSaveDebounced() {
         if (!appLoaded) return;
         clearTimeout(autoSaveTimer);
@@ -1134,6 +1160,15 @@
 
       // Used during load — only updates display fields, does NOT call calculate()
       // (rows don't exist in the DOM yet during load, so calculate() would be premature)
+      // SKBBK phase rate by date (PERKESO schedule): 0.75% Jun 2026 – May 2028,
+      // 1.00% Jun 2028 – May 2031, 1.25% from Jun 2031 onward
+      function skbbkRate() {
+        const now = new Date();
+        if (now >= new Date(2031, 5, 1)) return 0.0125;
+        if (now >= new Date(2028, 5, 1)) return 0.01;
+        return 0.0075;
+      }
+
       function calculateSalaryDisplay() {
         let gross = parseFloat(document.getElementById("gross").value) || 0;
         let other = parseFloat(document.getElementById("other").value) || 0;
@@ -1147,7 +1182,10 @@
         let eis = deductionsEnabled ? capped * 0.002 : 0;
         // SKBBK "LINDUNG 24 Jam" — employee-borne; no longer mandatory, so the
         // field is an override like PCB: blank = auto-estimate, typed = use that (0 = opted out)
-        let lindungAuto = deductionsEnabled ? capped * 0.0075 : 0;
+        const skbbkPhaseRate = skbbkRate();
+        let lindungAuto = deductionsEnabled ? capped * skbbkPhaseRate : 0;
+        document.getElementById("skbbkLabel").innerText =
+          "SKBBK (" + (skbbkPhaseRate * 100).toFixed(2) + "%):";
         let skbbkInput = document.getElementById("skbbk").value;
         let lindung = deductionsEnabled
           ? (skbbkInput.trim() !== "" ? (parseFloat(skbbkInput) || 0) : lindungAuto)
@@ -1339,6 +1377,14 @@
           row.dataset.times = String(n);
           calculate();
         }
+      }
+
+      // Mobile: del lives inside the cadence popover — reuses deleteRow (undo toast included)
+      function popDeleteRow() {
+        if (!popTargetRow) return;
+        document.getElementById("cadencePopover").style.display = "none";
+        deleteRow(popTargetRow.cells[0].querySelector("input"));
+        popTargetRow = null;
       }
 
       // Daily / Weekly — set the cadence, OR click the ACTIVE one again to turn ongoing OFF
