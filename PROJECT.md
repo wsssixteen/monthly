@@ -103,7 +103,8 @@ After a promote, the `#undoToast` appears bottom-center for 5s — **Undo** move
 - **Item & Notes column width:** ⏳ reduce input length slightly for all 3 tables
 - Sub-Total **and Notes** columns hidden (`display: none` on `nth-child(3)` + `nth-child(4)`) — leaves Item / Amount / Actions so it isn't cramped
 - **Commitment-row `del` moves into the ◐ cadence popover** on mobile (`.pop-del`, divider-separated "🗑 Delete row" → `popDeleteRow()`, reuses `deleteRow()` so the undo toast still fires); the row's own del button is hidden (`.category-body table button.danger`). Workshop tables keep their del (only 2 buttons there). Desktop unchanged.
-- **Menu button** is `≡` with amber accent (`#ffb300`/dark glyph; light mode `#b8762a`/white)
+- **Menu button** is `≡`, standard green (amber accent tried 2026-07, reverted). Restart `↺` is grey `#555` dark / standard amber light (amber-dark also tried, too loud).
+- **Mobile declutter**: net-box subtitles ("Gross + Other − Deductions" / "Salary − Spent"), the PCB hint line, and all deduction percentages (`span.pct`) are hidden under 600px. `#popCadenceX` is pinned (`flex: 1 1 40px; min-width: 0`) so native number-input widths can't make the times-row wider than the other popover rows.
 - **Double-click any input** selects all its text (`document` dblclick → `input.select()`); dragging text inside an input no longer starts a category drag (`enableDrag` cancels `dragstart` when it originates from an input)
 - Tables: `min-width: 280px`, horizontal scroll on `.category-body` and `.planning`
 - Amount column: `width: 60px`

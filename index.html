@@ -320,8 +320,7 @@
         display: none;
       }
       .restart-btn {
-        background: #ffb300;
-        color: #1b1b1b;
+        background: #555;
       }
       body.light .restart-btn {
         background: #b8762a;
@@ -442,6 +441,13 @@
       .state-popover > button {
         width: 100%;
         box-sizing: border-box;
+      }
+      /* Pin the X input so native number-input width (varies per phone browser)
+         can never push the times-row wider than the other rows */
+      #popCadenceX {
+        flex: 1 1 40px;
+        width: 40px;
+        min-width: 0;
       }
       .pop-divider {
         height: 1px;
@@ -566,6 +572,19 @@
         }
         .pop-del {
           display: block;
+        }
+
+        /* Mobile declutter: labels carry enough on a small screen
+           (.net-half prefix outranks the base .net-subtitle rule below) */
+        .net-half .net-subtitle,
+        .net-label .net-subtitle {
+          display: none;
+        }
+        #pcbHint {
+          display: none;
+        }
+        .pct {
+          display: none;
         }
 
         /* Income inputs: override fixed width on mobile */
@@ -974,14 +993,14 @@
           </div>
           <div class="deductions-grid">
             <div class="deductions-col">
-              <div><span class="deduction-label">EPF (11%):</span> RM <span id="epfVal">0</span></div>
-              <div><span class="deduction-label">SOCSO (0.5%):</span> RM <span id="socsoVal">0</span></div>
+              <div><span class="deduction-label">EPF<span class="pct"> (11%)</span>:</span> RM <span id="epfVal">0</span></div>
+              <div><span class="deduction-label">SOCSO<span class="pct"> (0.5%)</span>:</span> RM <span id="socsoVal">0</span></div>
               <div><span class="deduction-label" id="skbbkLabel">SKBBK:</span> RM
                 <input type="number" id="skbbk" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated — type a value to override (opt-out: type 0)" />
               </div>
             </div>
             <div class="deductions-col">
-              <div><span class="deduction-label">EIS (0.2%):</span> RM <span id="eisVal">0</span></div>
+              <div><span class="deduction-label">EIS<span class="pct"> (0.2%)</span>:</span> RM <span id="eisVal">0</span></div>
               <div id="pcbRow">
                 <span class="deduction-label">PCB:</span> RM
                 <input type="number" id="tax" value="" placeholder="0" oninput="calculateSalary(); autoSaveDebounced()" style="width: 60px" title="Auto-estimated from the tax brackets — type a value to override" />
@@ -1197,8 +1216,8 @@
         // field is an override like PCB: blank = auto-estimate, typed = use that (0 = opted out)
         const skbbkPhaseRate = skbbkRate();
         let lindungAuto = deductionsEnabled ? capped * skbbkPhaseRate : 0;
-        document.getElementById("skbbkLabel").innerText =
-          "SKBBK (" + (skbbkPhaseRate * 100).toFixed(2) + "%):";
+        document.getElementById("skbbkLabel").innerHTML =
+          'SKBBK<span class="pct"> (' + (skbbkPhaseRate * 100).toFixed(2) + "%)</span>:";
         let skbbkInput = document.getElementById("skbbk").value;
         let lindung = deductionsEnabled
           ? (skbbkInput.trim() !== "" ? (parseFloat(skbbkInput) || 0) : lindungAuto)
