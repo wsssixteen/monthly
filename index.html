@@ -318,7 +318,10 @@
       .category:not(.collapsed):not(.cat-disabled) .power-btn {
         display: none;
       }
-      .category.collapsed .header-btns button.danger {
+      /* Hide x when collapsed, OR when disabled — a powered-off category
+         shows only its power button so it can be turned back on. */
+      .category.collapsed .header-btns button.danger,
+      .category.cat-disabled .header-btns button.danger {
         display: none;
       }
       .restart-btn {
