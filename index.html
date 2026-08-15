@@ -312,8 +312,10 @@
         gap: 4px;
         align-items: center;
       }
-      /* Open panel shows x; collapsed panel swaps it for the power button */
-      .category:not(.collapsed) .power-btn {
+      /* Open panel shows x; collapsed panel swaps it for the power button.
+         Exception: a disabled (powered-off) category keeps its power button
+         while expanded so it can be re-enabled in place. */
+      .category:not(.collapsed):not(.cat-disabled) .power-btn {
         display: none;
       }
       .category.collapsed .header-btns button.danger {
