@@ -1121,7 +1121,7 @@
     <!-- Floating popovers: row-state chooser + promote-target chooser -->
     <div class="state-popover" id="statePopover" style="display: none">
       <div class="pop-current" id="popCurrent">Current: 0 times | RM 0.00 (spent)</div>
-      <div class="pop-custom">Update: <input type="number" id="popTimesPaid" min="0" placeholder="times" /> / <span id="popMaxTimes">0</span> <button onclick="popSetTimesPaid()">set</button></div>
+      <div class="pop-custom">Update: <input type="number" id="popTimesPaid" min="0" placeholder="times" onchange="popSetTimesPaid()" /> / <span id="popMaxTimes">0</span> <button onclick="popSetTimesPaid()">set</button></div>
     </div>
     <div class="state-popover" id="cadencePopover" style="display: none">
       <button data-cad="daily" onclick="popPickCadence('daily')">Daily</button>
@@ -1327,10 +1327,18 @@
 
       function applyRowState(row) {
         const st = row.dataset.state || "active";
-        row.classList.toggle("row-paid", st === "paid");
+        // An ongoing row whose counter hit its cap (X/X) counts as "done this cycle"
+        const n = rowInstallments(row);
+        const ongoingFull = st === "ongoing" && n > 0 && (parseInt(row.dataset.times) || 0) >= n;
+        row.classList.toggle("row-paid", st === "paid" || ongoingFull);
         const paidBtn = row.querySelector(".state-btn");
-        paidBtn.textContent = st === "paid" ? "↺" : "✓";
-        paidBtn.title = st === "paid" ? "Paid — click to restore" : "Mark as paid (full amount)";
+        const paidLike = st === "paid" || ongoingFull;
+        paidBtn.textContent = paidLike ? "↺" : "✓";
+        paidBtn.title =
+          st === "paid" ? "Paid — click to restore"
+          : ongoingFull ? "Done this cycle (X/X) — click to reset counter"
+          : st === "ongoing" ? "Mark this cycle fully done (X/X)"
+          : "Mark as paid (full amount)";
         const ongBtn = row.querySelector(".ongoing-btn");
         if (ongBtn) ongBtn.classList.toggle("ongoing-active", st === "ongoing");
         // Amount-cell badge: shows the cadence, visible only when the row is ongoing
@@ -1378,10 +1386,21 @@
         document.getElementById("popMaxTimes").textContent = n; // "/ N" = month total installments
       }
 
-      // ✓ button — toggle paid / restore. NO popup, just gray the row out.
+      // ✓ button — for a plain row: toggle paid / restore (gray it out).
+      // For an ONGOING (weekly/daily) row: fill the counter to X/X ("done fully
+      // this cycle"), or click again to reset it to 0. Cadence is never touched.
       function onPaidBtn(btn, e) {
         e.stopPropagation();
         const row = btn.closest("tr");
+        if (row.dataset.state === "ongoing") {
+          const n = rowInstallments(row);
+          const full = (parseInt(row.dataset.times) || 0) >= n;
+          row.dataset.times = full ? "0" : String(n); // toggle X/X ⇄ 0
+          applyRowState(row);
+          calculate();
+          autoSaveNow();
+          return;
+        }
         setRowState(row, row.dataset.state === "paid" ? "active" : "paid");
       }
 
@@ -1504,9 +1523,13 @@
       });
 
       function untickAll() {
-        if (!confirm("Restore all paid / ongoing rows back to active?")) return;
+        if (!confirm("New month start — restore paid rows to active and reset ongoing counters to 0? Weekly / daily cadences are kept.")) return;
         document.querySelectorAll(".category table tr").forEach((r) => {
-          if (r.dataset.state && r.dataset.state !== "active") {
+          if (r.dataset.state === "ongoing") {
+            // Keep the ongoing cadence (weekly/daily) — only reset the times-paid counter
+            r.dataset.times = "0";
+            applyRowState(r);
+          } else if (r.dataset.state && r.dataset.state !== "active") {
             r.dataset.state = "active";
             applyRowState(r);
           }
