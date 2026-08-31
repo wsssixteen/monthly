@@ -59,15 +59,17 @@ Amount fields in all three tables accept `+ - * / ( )` expressions (e.g. `20*30`
 
 ### Row States (commitment rows) — TWO separate controls with separate jobs
 Actions cell is `[✓] [◐] [del]`; the Amount cell holds `[input] [cadence badge]`.
-- **`✓` (paid) — NO popup.** Grays the row (0.45 opacity), counts the **full amount** as spent; flips to `↺` to restore. `onPaidBtn()`.
+- **`✓` (paid / done) — NO popup.** `onPaidBtn()` branches on the row's state:
+  - **Plain row:** grays the row (0.45 opacity), counts the **full amount** as spent; flips to `↺` to restore.
+  - **Ongoing row (weekly/daily):** fills the counter to **X/X** ("done fully this cycle"), grays the row, flips to `↺`; clicking again resets the counter to **0**. The cadence and ongoing state are **never** touched — `✓` no longer converts an ongoing row to `paid`.
 - **`◐` (actions) — CADENCE chooser** (`onOngoingBtn()` → `#cadencePopover`): `Daily` / `Weekly` / `[X] times [set]`. Sets `dataset.cadence` and marks the row ongoing (`popPickCadence()` / `popSetCadenceX()`). The current one is highlighted. **Clicking the already-active cadence again toggles the row back to a plain `active` row** (undo) — Balance immediately drops its amount×times and the Sub-Total reverts to the raw amount.
-- **Cadence badge (Amount cell) — TIMES chooser** (`onBadge()` → `#statePopover`): visible only when ongoing, shows the cadence. Opens a 2-row popover: `Current: <t> times | RM <amount×t> (spent)` + `Update: [input] set` (`popSetTimesPaid()` → `dataset.times`). "set" keeps the popover open, refreshes the Current line.
+- **Cadence badge (Amount cell) — TIMES chooser** (`onBadge()` → `#statePopover`): visible only when ongoing, shows the cadence. Opens a 2-row popover: `Current: <t> times | RM <amount×t> (spent)` + `Update: [input] set` (`popSetTimesPaid()` → `dataset.times`). The input **auto-saves on blur / Enter** (`onchange="popSetTimesPaid()"`); the `set` button remains as an explicit fallback. Either keeps the popover open and refreshes the Current line. When `dataset.times` reaches N (X/X), `applyRowState()` grays the row like a paid row while keeping the cadence badge visible.
 - **Two numbers, `rowInstallments(row)` = N:**
   - **N** (month total, from cadence): `daily` = days in month (28–31), `weekly` = `ceil(days ÷ 7)`, `X` = the custom count.
   - **Sub-Total column + Grand Total** = `amount × N` (the full month plan). Changing times does NOT move them.
   - **Balance** = `amount × timesPaid` (what's actually been spent so far). `timesPaid` is **capped at N** — the Update input's `max` = N, and `capTimesToInstallments()` clamps it when the cadence shrinks.
 
-**↺ Untick All** (left of Save) resets every paid/ongoing row to active — the new-month ritual.
+**↺ Untick All** (`untickAll()`) is the new-month ritual: **paid** rows restore to active; **ongoing** rows keep their weekly/daily cadence and only reset the times-paid counter to **0** (they are NOT forced back to plain active rows, so the cadence is never lost).
 
 ### Promote (Considerations → Commitments)
 Considerations rows have an `↑` promote button: one category = moves straight in; multiple = `#promotePopover` lists category targets. Breakdown rows stay del-only.
